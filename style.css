@@ -1,0 +1,96 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f9f9fa;
+  color: #333;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header, footer {
+  background: #483063;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+
+.main-layout {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.left-panel {
+  flex: 1 1 280px;
+  min-width: 260px;
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.05);
+}
+
+.right-panel {
+  flex: 2 1 500px;
+  min-width: 400px;
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.05);
+}
+
+.form-group {
+  margin-bottom: 1em;
+}
+
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.3em;
+}
+
+select, input[type="checkbox"], input[type="radio"] {
+  font-size: 1em;
+  width: 100%;
+}
+
+#visualizerContainer {
+  position: relative;
+  width: 100%;
+  padding-top: 66.67%; /* 600x400 */
+  background: #f2f2f2;
+  border: 1px solid #ccc;
+}
+
+#balloonSVG {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#silhouette {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  height: 60%;
+  opacity: 0.6;
+}
+
+.export-buttons {
+  margin-top: 1em;
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+}
+
+.price-display {
+  font-size: 1.2em;
+  color: #483063;
+}

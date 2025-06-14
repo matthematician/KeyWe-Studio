@@ -1,0 +1,44 @@
+body {
+  font-family: 'Helvetica Neue', sans-serif;
+  margin: 0;
+  padding: 1em;
+  background: #fff;
+  color: #333;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.controls {
+  margin: 1em 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.controls label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.visualizer {
+  background: #555D65;
+  background-image: url('assets/eventhall.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 1em;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  margin-top: 1em;
+}
+
+svg {
+  max-width: 100%;
+  height: auto;
+}

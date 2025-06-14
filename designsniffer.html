@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<body>
+<label for="groupSelect">Group:</label>
+<select id="groupSelect">
+  <option value="1">Group 1</option>
+  <option value="2">Group 2</option>
+  <option value="3">Group 3</option>
+</select>
+
+<label for="sizeSlider">Balloon Size (in):</label>
+<input type="range" id="sizeSlider" min="3" max="36" step="0.5" value="11">
+<span id="sizeDisplay">11 in</span>
+<script>
+  const sizeSlider = document.getElementById('sizeSlider');
+    const sizeDisplay = document.getElementById('sizeDisplay');
+    let currentRadius = 11 * 1.5625;
+
+    sizeSlider.addEventListener('input', () => {
+  const inchValue = parseFloat(sizeSlider.value);
+  sizeDisplay.textContent = `${inchValue} in`;
+  currentRadius = inchValue * 1.5625;
+
+  // Update live hover circle
+  const hoverCircle = document.getElementById('hoverCircle');
+  if (hoverCircle) {
+    hoverCircle.setAttribute('r', currentRadius);
+  }
+});
+</script>
+
+<label for="rotationSlider">Rotation (°):</label>
+<input type="range" id="rotationSlider" min="-180" max="180" step="1" value="0" />
+<span id="rotationDisplay">0°</span>
+<script>
+    const rotationSlider = document.getElementById('rotationSlider');
+    const rotationDisplay = document.getElementById('rotationDisplay');
+    let currentRotation = 0;
+
+    rotationSlider.addEventListener('input', () => {
+    currentRotation = parseInt(rotationSlider.value, 10);
+    rotationDisplay.textContent = `${currentRotation}°`;
+    updateCrosshairRotation();
+});
+</script>
+
+<label for="shapeSelect">Shape Type:</label>
+<select id="shapeSelect">
+  <option value="circleShape" selected>Circle</option>
+  <option value="heliumShape">Helium</option>
+</select>
+
+<button id="clearLog" style="margin-left: 1em;">Clear Log</button>
+<button id="exportCSV" style="margin-left: 1em;">Export CSV</button>
+<button id="undoClick" style="margin-left: 1em;">Undo</button>
+<br/>
+<textarea id="log" rows="6" cols="70" readonly style="margin-top: 0.5em; display: block;"></textarea>
+
+<input type="file" id="bgUpload" accept="image/*" style="margin: 1em 0;" />
+<svg width="600" height="400" style="border:1px solid gray; display: block; position: relative; background-color: #f0f0f0;" id="coordMap">
+    <!-- Define non-circle shapes -->
+    <defs>
+    <path id="heliumShape" d="m 35.52076,19.3118 c 0.08856,9.95124 -3.80396,15.94556 -8.385015,20.72581 -3.384757,3.53195 -4.978623,7.54544 -8.368683,8.09015 -0.169579,0.0273 -1.00478,0.87076 0.08978,1.67783 0.260449,0.19203 -0.872682,0.0197 -0.988781,0.022 -0.139447,-0.006 -1.327082,0.0334 -1.03678,-0.17365 0.991525,-0.70767 0.290533,-1.51895 0.104416,-1.56184 -3.595496,-0.82857 -3.449743,-2.91301 -7.8992,-8.07625 -5.499062,-6.38121 -8.682255,-10.9336 -9.032419,-20.02281 -0.208095,-10.85212 7.573878,-19.80196 17.381535,-19.99003 9.807657,-0.18807 18.038531,8.4553 18.135116,19.30898 z" />
+    </defs>
+
+    <image id="bgImage" href="" x="0" y="0" height="400" preserveAspectRatio="xMidYMid meet" />
+  <text id="coords" x="10" y="20" font-size="16" fill="black"></text>
+<g id="crosshairGroup">
+    <line id="crosshairH" x1="0" y1="0" x2="600" y2="0" stroke="gray" stroke-width="1" stroke-dasharray="2 2" />
+<line id="crosshairV" x1="0" y1="0" x2="0" y2="400" stroke="gray" stroke-width="1" stroke-dasharray="2 2" />
+</g>
+<circle id="hoverCircle" r="20" fill="#aaaaaa" opacity="0.5"/>
+
+<image id="bgImage" href="" x="0" y="0" height="400" preserveAspectRatio="xMidYMid meet" />
+  <text id="coords" x="10" y="20" font-size="16" fill="black"></text>
+   <image href="assets/silhouette.png" id="silhouetteCoords" x="20" y="180" height="200" preserveAspectRatio="xMidYMid meet" style="z-index:998; opacity:0.5;"/>
+ 
+</svg>
+
+
+<svg width="600" height="400" style="border:1px solid #ccc; display: block; margin-top: 1em;" id="previewMap">
+  <image href="assets/silhouette.png" id="silhouette" x="20" y="180" height="200" preserveAspectRatio="xMidYMid meet" />
+</svg>
+
+<script>
+  const svg = document.getElementById('coordMap');
+  const preview = document.getElementById('previewMap');
+  const label = document.getElementById('coords');
+  const log = document.getElementById('log');
+  const clicks = [];
+
+function updatePreview() {
+  // Remove only dynamically placed balloon circles
+  [...preview.querySelectorAll('use.balloon')].forEach(el => el.remove()); 
+  [...preview.querySelectorAll('circle.balloon')].forEach(el => el.remove()); 
+
+  clicks.forEach((entry, index) => {
+    if (entry.removed) return;
+    if (entry.shape === 'circleShape' || !(entry.shape)) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('class', 'balloon');
+        circle.setAttribute('cx', entry.x);
+        circle.setAttribute('cy', entry.y);
+        circle.setAttribute('r', entry.radius);
+        circle.setAttribute('fill', getColor(entry.group));
+        circle.setAttribute('opacity', '0.8');
+        circle.setAttribute('rotation', entry.rotation);
+        preview.appendChild(circle);
+        } else if (entry.shape === 'heliumShape') {
+        const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        use.setAttribute('href', '#heliumShape');
+        use.setAttribute('class', 'balloon');
+        use.setAttribute('transform', `rotate(${entry.rotation} ${entry.x} ${entry.y} ) translate(${entry.x - entry.radius} ${entry.y - entry.radius}) scale(${entry.radius / 17.75})`);
+        use.setAttribute('z-index', entry.z_index);
+        use.setAttribute('fill', getColor(entry.group));
+        use.setAttribute('opacity', '0.8');
+        preview.appendChild(use);
+    }
+  });
+}
+
+ // Enable drag and scale for the background image in coordMap
+(function enableCoordMapImageTransform() {
+  const bgImage = document.querySelector('#coordMap image#bgImage');
+  const coordMap = document.getElementById('coordMap');
+  if (!coordMap || !bgImage) return;
+
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let imgX = parseFloat(bgImage.getAttribute('x') || 0);
+  let imgY = parseFloat(bgImage.getAttribute('y') || 0);
+  let imgHeight = parseFloat(bgImage.getAttribute('height') || 400);
+
+  coordMap.addEventListener('mousedown', (e) => {
+    if (!e.shiftKey) return;
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    e.stopPropagation();
+  });
+
+  coordMap.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    bgImage.setAttribute('x', imgX + dx);
+    bgImage.setAttribute('y', imgY + dy);
+  });
+
+  coordMap.addEventListener('mouseup', (e) => {
+    if (isDragging) {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      imgX += dx;
+      imgY += dy;
+    }
+    isDragging = false;
+  });
+
+  coordMap.addEventListener('mouseleave', () => {
+    isDragging = false;
+  });
+
+  coordMap.addEventListener('wheel', (e) => {
+    if (!e.shiftKey) return;
+    e.preventDefault();
+    const scaleDelta = e.deltaY < 0 ? 1.05 : 0.95;
+    imgHeight *= scaleDelta;
+    bgImage.setAttribute('height', imgHeight);
+  });
+})();
+
+// Right-click to rotate the crosshair 
+let isRotating = false;
+let startX = 0;
+
+coordMap.addEventListener('contextmenu', e => e.preventDefault());
+
+coordMap.addEventListener('mousedown', e => {
+  if (e.button === 2) { // right-click
+    isRotating = true;
+    startX = e.clientX;
+  }
+});
+
+window.addEventListener('mousemove', e => {
+  if (!isRotating) return;
+  const delta = startX - e.clientX;
+  const newRotation = Math.floor(Math.max(-180, Math.min(180, currentRotation + delta/10)));
+  rotationSlider.value = newRotation;
+  currentRotation = newRotation;
+  rotationDisplay.textContent = `${newRotation}°`;
+  updateCrosshairRotation();
+});
+
+window.addEventListener('mouseup', () => {
+  isRotating = false;
+});
+
+
+
+
+  function getColor(group) {
+    const colors = {
+      '1': '#FF8888',
+      '2': '#88FF88',
+      '3': '#8888FF'
+    };
+    return colors[group] || '#CCCCCC';
+  }
+
+  svg.addEventListener('click', e => {
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const x = Math.round(svgPt.x);
+    const y = Math.round(svgPt.y);
+    const group = document.getElementById('groupSelect').value;
+    const radius = currentRadius;
+    const z_index = clicks.length * 2 + 5; // Leave spaces for the overlays in between
+    const shape = document.getElementById('shapeSelect').value;
+    const rotation = currentRotation; 
+    label.textContent = `x: ${x}, y: ${y}`;
+    const entry = { group, x, y, radius, z_index, shape, rotation };
+    clicks.push(entry);
+    log.value += `Color ${group}, [${x},${y}] @ ${rotation}°, r: ${radius}, shape: ${shape}\n`;
+    updatePreview();
+  });
+
+  svg.addEventListener('mousemove', e => {
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const x = Math.round(svgPt.x);
+    const y = Math.round(svgPt.y);
+    document.getElementById('crosshairH').setAttribute('y1', y);
+    document.getElementById('crosshairH').setAttribute('y2', y);
+    document.getElementById('crosshairV').setAttribute('x1', x);
+    document.getElementById('crosshairV').setAttribute('x2', x);
+    document.getElementById('hoverCircle').setAttribute('cx', x);
+    document.getElementById('hoverCircle').setAttribute('cy', y);
+    document.getElementById('hoverCircle').setAttribute('r', currentRadius);
+    updateCrosshairRotation();
+  });
+
+    function updateCrosshairRotation() {
+  const cx = parseFloat(crosshairV.getAttribute('x1'));
+  const cy = parseFloat(crosshairH.getAttribute('y1'));
+
+  const crosshairGroup = document.getElementById('crosshairGroup');
+  if (!crosshairGroup) return;
+
+  crosshairGroup.setAttribute('transform', `rotate(${currentRotation} ${cx} ${cy})`);
+}
+
+  document.getElementById('bgUpload').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const bgImage = document.getElementById('bgImage');
+      bgImage.setAttribute('href', event.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('exportCSV').addEventListener('click', () => {
+    if (clicks.length === 0) return alert('No clicks to export!');
+    clicks.sort((a, b) => b.cx - a.cx || b.cy - a.cy);
+    for (let i = 0; i < clicks.length; i++) {
+      clicks[i].z = 2*i+5; // Leave spaces for the overlays in between
+    }
+    const csvContent = 'data:text/csv;charset=utf-8,' +
+      ['group_id,cx,cy,radius,z_index,shape,rotation'].concat(clicks.map(p => `${p.group},${p.x},${p.y},${p.radius},${p.z},${p.shape},${p.rotation}`)).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'balloon_clicks.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  document.getElementById('clearLog').addEventListener('click', () => {
+    clicks.length = 0;
+    log.value = '';
+    // label.textContent = 'Click for coordinates';
+    updatePreview();
+  });
+
+// Hook up undo functionality to update preview properly
+const undoButton = document.getElementById('undoClick');
+if (undoButton) {
+  undoButton.addEventListener('click', () => {
+    const last = clicks.reverse().find(p => !p.removed);
+    if (last) last.removed = true;
+    clicks.pop();
+    log.value = clicks.map(p => `Group ${p.group}, cx: ${p.x}, cy: ${p.y}, r: ${p.radius}`).join('\n');
+    updatePreview();
+  });
+}
+  // Cursor tracker on preview
+  const crosshairH = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  crosshairH.setAttribute('id', 'cursorH');
+  crosshairH.setAttribute('x1', '0');
+  crosshairH.setAttribute('x2', '600');
+  crosshairH.setAttribute('y1', '0');
+  crosshairH.setAttribute('y2', '0');
+  crosshairH.setAttribute('stroke', 'gray');
+  crosshairH.setAttribute('stroke-width', '1');
+  crosshairH.setAttribute('stroke-dasharray', '2 2');
+  preview.appendChild(crosshairH);
+
+  const crosshairV = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  crosshairV.setAttribute('id', 'cursorV');
+  crosshairV.setAttribute('y1', '0');
+  crosshairV.setAttribute('y2', '400');
+  crosshairV.setAttribute('x1', '0');
+  crosshairV.setAttribute('x2', '0');
+  crosshairV.setAttribute('stroke', 'gray');
+  crosshairV.setAttribute('stroke-width', '1');
+  crosshairV.setAttribute('stroke-dasharray', '2 2');
+  preview.appendChild(crosshairV);
+
+  const hoverCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  hoverCircle.setAttribute('r', '20');
+  hoverCircle.setAttribute('fill', '#aaaaaa');
+  hoverCircle.setAttribute('opacity', '0.5');
+  preview.appendChild(hoverCircle);
+
+  svg.addEventListener('mousemove', e => {
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+  const x = Math.round(svgPt.x);
+  const y = Math.round(svgPt.y);
+
+  crosshairH.setAttribute('y1', y);
+  crosshairH.setAttribute('y2', y);
+  crosshairV.setAttribute('x1', x);
+  crosshairV.setAttribute('x2', x);
+  hoverCircle.setAttribute('cx', x);
+  hoverCircle.setAttribute('cy', y);
+  const radius = currentRadius;
+  hoverCircle.setAttribute('r', radius);
+  const group = document.getElementById('groupSelect').value;
+  hoverCircle.setAttribute('fill', getColor(group));
+});
+    
+
+</script>
+
+
+
+
+
+
+
+<style>
+  #coordMap {
+    cursor: crosshair;
+  }
+  #previewMap {
+    cursor: default;
+  }
+</style>
+
+</body>
+</html>
