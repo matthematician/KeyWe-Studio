@@ -11,16 +11,17 @@ const colors = [
       { name: 'Chrome White Gold', code: '#EFECE2' },     
       { name: 'Pastel Yellow', code: '#FBF8D2' },
       { name: 'Lime Green', code: '#8FC73E' },
-      { name: 'Forest Green', code: '#218B21' },      
+      { name: 'Forest Green', code: '#218B21' },     
       { name: 'Sage / Tea Green', code: '#B2DDC3' },
       { name: 'Baby Blue', code: '#A0DAEB' },
       { name: 'Turquoise', code: '#37B9CA' },
       { name: 'Carolina Blue', code: '#49808B'},
-      { name: 'Navy Blue', code: '#1F537D' },
+      { name: 'Navy Blue', code: '#1F337D' },
       { name: 'Standard Blue', code: '#0000FF' },
       { name: 'Lavender / Lilac', code: '#C4B9D9' },
       { name: 'Plum Purple', code: '#5E1791' },
       { name: 'Baby Pink', code: '#F7CEDE' },
+      { name: 'Flamingo Pink', code: '#F65B85' },
       { name: 'Standard Black', code: '#000000' },
       { name: 'Chrome Silver', code: '#B4B4B4' },
       { name: 'Fog Gray', code: '#D5D5D5' },
@@ -32,6 +33,12 @@ const colors = [
       const match = colors.find(c => c.name === name);
       return match ? match.code : '#888888';
     }
+
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
 
 // Sample design metadata JSON
 const allDesignMetadata = {
@@ -114,7 +121,7 @@ const allDesignMetadata = {
               theBalloon.setAttribute('cy', row.cy);
               theBalloon.setAttribute('r', row.radius);
               theBalloon.setAttribute('fill', colorCode);
-              theBalloon.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.5' : '1.0'); 
+              theBalloon.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0'); 
               theBalloon.setAttribute('filter', 'url(#balloonShadow)');
               theBalloon.setAttribute('z-index', row.z_index);
               group.appendChild(theBalloon);
@@ -168,12 +175,12 @@ const allDesignMetadata = {
           elements.forEach(el => {
             if (el.tagName === 'circle') {
               el.setAttribute('fill', colorCode);
-              el.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.5' : '1.0');
+              el.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
 
             } 
             else if (el.tagName === 'use') {
               el.setAttribute('fill', colorCode);
-              el.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.5' : '1.0');
+              el.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
             }else if (el.tagName === 'image') {
                 let newHref = el.href.baseVal;
                 //console.log('newHref:', newHref);
@@ -196,8 +203,8 @@ const allDesignMetadata = {
     let swapClickCount = 0;
 
     const swapButton = document.getElementById('swapButton');
-    swapButton.textContent = 'Swap Colors';
-    swapButton.style.marginTop = '1em';
+    //swapButton.textContent = 'Swap Colors';
+    //swapButton.style.marginTop = '1em';
     swapButton.className = 'swap-button';
     // document.querySelector('form-group').appendChild(swapButton);
 
@@ -231,7 +238,7 @@ document.getElementById('b2bToggle').addEventListener('change', updatePriceDispl
     silhouette.style.left = '20px';
     silhouette.style.height = '50%';
     silhouette.style.zIndex = '0';
-    document.querySelector('.visualizer').appendChild(silhouette);
+    document.querySelector('#visualizerContainer').appendChild(silhouette);
 
     const branding = document.createElement('img');
     branding.src = 'assets/KeyWe-Icon-PNG.png';
@@ -241,10 +248,10 @@ document.getElementById('b2bToggle').addEventListener('change', updatePriceDispl
     branding.style.right = '20px';
     branding.style.height = '15%';
     branding.style.zIndex = '0';
-    document.querySelector('.visualizer').appendChild(branding);
+    document.querySelector('#visualizerContainer').appendChild(branding);
 
     const palettes = [
-{ name: 'Select Colors...', custom: true },
+{ name: 'Custom Colors...', custom: true },
 { name: '-- Holidays --', separator: true },
 { name: 'Valentine\'s Classic', colors: ['Standard Red', 'Baby Pink', 'Standard White'] },
 { name: 'Valentine\'s Metallic', colors: ['Chrome Rose Gold', 'Cameo Pink', 'Chrome Red'] },
@@ -313,11 +320,11 @@ designSelect.addEventListener('change', () => {
         let [group_id, cx, cy, radius, z_index, shapeType, rotation] = row.split(',');
         if (!(shapeType)){ shapeType = 'circleShape';}
         if (!(rotation)){ rotation = 0;}
-        const colorName = document.querySelectorAll('.color-select')[group_id - 1].value;
+        const colorName = document.querySelectorAll('.colorSelect')[group_id - 1].value;
         const colorCode = getColorCodeByName(colorName);
         let group = groups[group_id - 1];
         counter += 1;
-        //console.log('Adding row: ', counter, ' in group ', group, ' of shape ', shapeType);
+        console.log('Adding row: ', counter, ' in group ', group, ' of shape ', shapeType);
 
         if (shapeType.indexOf('circle') >=0 || !(shapeType)) {
         let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -325,11 +332,11 @@ designSelect.addEventListener('change', () => {
         circle.setAttribute('cy', cy);
         circle.setAttribute('r', radius);
         circle.setAttribute('fill', colorCode);
-        circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.5' : '1.0');
+        circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
         circle.setAttribute('filter', 'url(#balloonShadow)');
 
         circle.setAttribute('class', 'balloon');
-        console.log('Adding ', circle);
+        //console.log('Adding ', circle);
         group.appendChild(circle);
         //console.log('Adding balloon of shape:', shapeType, 'with z-index:', z_index);
 
@@ -341,6 +348,7 @@ designSelect.addEventListener('change', () => {
         overlay.setAttribute('height', radius * 2);
         overlay.setAttribute('href', colorName.includes('Chrome') ? 'assets/sheenChr.png' : 'assets/sheenStd.png');
         overlay.setAttribute('class', 'balloon');
+        overlay.setAttribute('opacity', '0.5');
         group.appendChild(overlay);
       
     } else if (shapeType === 'heliumShape') {
@@ -363,18 +371,19 @@ designSelect.addEventListener('change', () => {
         overlay.setAttribute('transform', `rotate(${rotation} ${cx} ${cy})`);
         overlay.setAttribute('href', colorName.includes('Chrome') ? 'assets/heliumSheenChr.png' : 'assets/heliumSheenStd.png');
         overlay.setAttribute('class', 'balloon');
+        overlay.setAttribute('opacity', '0.5');
         group.appendChild(overlay);
         }
       });
     
     });
     // Rebind backdrop color update listeners on color dropdowns
-    document.querySelectorAll('.color-select').forEach(select => {
+    document.querySelectorAll('.colorSelect').forEach(select => {
   select.removeEventListener('change', updateBackdropColor); // prevent duplicates
   select.addEventListener('change', updateBackdropColor);
 });
     // Rebind backdrop color update listeners on palette dropdown
-     document.querySelectorAll('.palette-select').forEach(select => {
+     document.querySelectorAll('.paletteSelect').forEach(select => {
   select.removeEventListener('change', updateBackdropColor); // prevent duplicates
   select.addEventListener('change', updateBackdropColor);
 });
@@ -400,15 +409,15 @@ designSelect.addEventListener('change', () => {
     });
 
     const selectors = [
-      { select: document.getElementById('color1'), balloon: document.getElementById('balloon1'), overlay: document.querySelector('#balloonGroup1 image') },
-      { select: document.getElementById('color2'), balloon: document.getElementById('balloon2'), overlay: document.querySelector('#balloonGroup2 image') },
-      { select: document.getElementById('color3'), balloon: document.getElementById('balloon3'), overlay: document.querySelector('#balloonGroup3 image') }
-    ];
+      { select: document.getElementById('colorSelect1'), balloon: document.getElementById('balloon1'), overlay: document.querySelector('#balloonGroup1 image') },
+      { select: document.getElementById('colorSelect2'), balloon: document.getElementById('balloon2'), overlay: document.querySelector('#balloonGroup2 image') },
+      { select: document.getElementById('colorSelect3'), balloon: document.getElementById('balloon3'), overlay: document.querySelector('#balloonGroup3 image') }
+    ]; console.log("DEBUG: selectors =", selectors);
 
     selectors.forEach(({ select }) => {
       const defaultOption = document.createElement('option');
       defaultOption.value = '';
-      defaultOption.textContent = '-- Choose a color --';
+      defaultOption.textContent = ' Choose...';
       defaultOption.disabled = true;
       defaultOption.selected = true;
       select.appendChild(defaultOption);
@@ -426,8 +435,8 @@ designSelect.addEventListener('change', () => {
     });
 
     // Create Shuffle Groups button
-const shuffleBtn = document.createElement('button');
-shuffleBtn.textContent = 'Shuffle Colors';
+const shuffleBtn = document.getElementById('shuffleButton');
+//shuffleBtn.textContent = 'Shuffle Colors';
 shuffleBtn.addEventListener('click', () => {
   const selectedFile = designSelect.value;
   fetch(`assets/designs/${selectedFile}`)
@@ -459,7 +468,7 @@ shuffleBtn.addEventListener('click', () => {
             let [group_id, cx, cy, radius, z_index, shapeType, rotation] = row.split(',');
             if(!(shapeType)){ shapeType = 'circleShape';}
             if(!(rotation)){ rotation = 0;}
-            const colorName = document.querySelectorAll('.color-select')[group_id - 1].value;
+            const colorName = document.querySelectorAll('.colorSelect')[group_id - 1].value;
             const colorCode = getColorCodeByName(colorName);
             const group = groups[group_id - 1];
 
@@ -469,7 +478,7 @@ shuffleBtn.addEventListener('click', () => {
         circle.setAttribute('cy', cy);
         circle.setAttribute('r', radius);
         circle.setAttribute('fill', colorCode);
-        circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.5' : '1.0');
+        circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
         circle.setAttribute('filter', 'url(#balloonShadow)');
 
         circle.setAttribute('class', 'balloon');
@@ -482,6 +491,7 @@ shuffleBtn.addEventListener('click', () => {
         overlay.setAttribute('height', radius * 2);
         overlay.setAttribute('href', colorName.includes('Chrome') ? 'assets/sheenChr.png' : 'assets/sheenStd.png');
         overlay.setAttribute('class', 'balloon');
+        overlay.setAttribute('opacity', '0.5'); 
         group.appendChild(overlay);
       
     } else if (shapeType.indexOf('heliumShape')>=0) {
@@ -489,6 +499,7 @@ shuffleBtn.addEventListener('click', () => {
           heliumShape.setAttribute('href', '#heliumShape');
           heliumShape.setAttribute('class', 'balloon');
           heliumShape.setAttribute('transform', `rotate(${rotation} ${cx} ${cy}) translate(${cx - radius} ${cy - radius}) scale(${radius / 17.75})`);
+          heliumShape.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
           heliumShape.setAttribute('z-index', z_index);
           heliumShape.setAttribute('fill', colorCode);
           // heliumShape.setAttribute('opacity', '0.8');
@@ -502,24 +513,26 @@ shuffleBtn.addEventListener('click', () => {
         overlay.setAttribute('transform', `rotate(${rotation} ${cx} ${cy})`);
         overlay.setAttribute('href', colorName.includes('Chrome') ? 'assets/heliumSheenChr.png' : 'assets/heliumSheenStd.png');
         overlay.setAttribute('class', 'balloon');
+        overlay.setAttribute('opacity', '0.5'); 
+
         group.appendChild(overlay);
         }
           });
         });
     });
 });
-document.querySelector('#studioControls').appendChild(shuffleBtn);
+//document.querySelector('#studioControls').appendChild(shuffleBtn);
 
 // Create Undo Shuffle button
-const undoBtn = document.createElement('button');
-undoBtn.textContent = 'Undo Shuffle';
+const undoBtn = document.getElementById('undoShuffle');
+//undoBtn.textContent = 'Undo Shuffle';
 undoBtn.addEventListener('click', () => {
   const event = new Event('change');
   designSelect.dispatchEvent(event);
 });
-document.querySelector('#studioControls').appendChild(undoBtn);
+//document.querySelector('#studioControls').appendChild(undoBtn);
 
-    /* selectors.forEach(({ select, balloon, overlay }) => {
+     /*selectors.forEach(({ select, balloon, overlay }) => {
       select.addEventListener('change', () => {
         const selectedName = select.value;
         const colorObj = colors.find(c => c.name === selectedName);
@@ -528,9 +541,9 @@ document.querySelector('#studioControls').appendChild(undoBtn);
           overlay.setAttribute('href', selectedName.includes('Chrome') ? 'assets/sheenChr.png' : 'assets/sheenStd.png');
         }
       });
-    }); */ 
+    });  */
 
-document.querySelectorAll('.color-select').forEach((select, index) => {
+document.querySelectorAll('.colorSelect').forEach((select, index) => {
   // console.log(`Binding select ${index} to balloonGroup${index + 1}`);
   select.addEventListener('change', () => {
     const colorName = select.value;
@@ -543,13 +556,13 @@ document.querySelectorAll('.color-select').forEach((select, index) => {
 
     group.querySelectorAll('circle').forEach(circle => {
       circle.setAttribute('fill', colorCode);
-      circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.5' : '1.0');
+      circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
      circle.setAttribute('filter', 'url(#balloonShadow)');
     });
 
     group.querySelectorAll('use').forEach(s => {
       s.setAttribute('fill', colorCode);
-      s.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.5' : '1.0');
+      s.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
      s.setAttribute('filter', 'url(#balloonShadow)');
     });
 
@@ -689,7 +702,7 @@ backdropSelect.addEventListener('change', () => {
     svg.insertBefore(rect, svg.firstChild); */
   }
 });
-document.querySelector('#studioControls').appendChild(backdropSelect);
+//document.querySelector('#studioControls').appendChild(backdropSelect);
 
 
 
@@ -699,23 +712,27 @@ priceDisplay.id = 'priceDisplay';
 priceDisplay.style.marginTop = '1em';
 priceDisplay.style.fontWeight = 'bold';
 priceDisplay.textContent = 'Price: $0';
-document.querySelector('#studioControls').appendChild(priceDisplay);
+//document.querySelector('#studioControls').appendChild(priceDisplay);
 
 let currentDesignMeta = {};
 
 function loadDesignMetadata(filename, metadata) {
   currentDesignMeta = metadata[filename] || {};
   updatePriceDisplay();
+  console.log("DEBUG: currentDesignMeta =", currentDesignMeta);
 }
 
 function updatePriceDisplay() {
-  const isB2B = document.getElementById('b2bPricing').checked;
-  let price = isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price;
-  if (typeof price !== 'number') price = 0;
-  priceDisplay.textContent = `Price: $${price}${isB2B ? ' per month' : ''}`;
+  const isB2B = document.getElementById('b2bToggle').checked;
+  //console.log("DEBUG: isB2B =", isB2B);
+  var price = isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price;
+  //if (typeof price !== 'number'){ console.log("Price was "+price); price = 0;}
+  //console.log("DEBUG: price =", price);
+  var priceDisplay = document.getElementById('priceOutput');
+  priceDisplay.innerHTML = `<strong>Your Price:</strong> $${price}${isB2B ? ' per month' : ''}`;
 }
 
-document.getElementById('b2bPricing').addEventListener('change', updatePriceDisplay);
+document.getElementById('b2bToggle').addEventListener('change', updatePriceDisplay);
 
 // loadDesignMetadata('classicspiralarch.csv', allDesignMetadata)
 
@@ -754,13 +771,11 @@ function uploadImage(blob, filename) {
 }
 
 // 3. Button to export and checkout
-const checkoutBtn = document.createElement('button');
-checkoutBtn.textContent = 'Buy This Design';
-checkoutBtn.style.marginTop = '1em';
-document.querySelector('#studioControls').appendChild(checkoutBtn);
+const checkoutBtn = document.getElementById('checkoutButton');
+
 
 checkoutBtn.addEventListener('click', async () => {
-  const svgEl = document.querySelector('#previewMap');
+  const svgEl = document.querySelector('#balloonSVG');
   if (!svgEl) return alert('Preview not found');
 
   const blob = await svgToPng(svgEl);
@@ -780,7 +795,15 @@ checkoutBtn.addEventListener('click', async () => {
 
 
     window.addEventListener('DOMContentLoaded', () => {
-      paletteSelect.value = 'Select Colors...';
-      renderDesignFromCSV('assets/designs/classicspiralarch.csv');
+      paletteSelect.value = 'Custom Colors...';
+       const initialDesign = getQueryParam("design") || "stringofpearls";
+       renderDesignFromCSV(`assets/designs/${initialDesign}.csv`);
+       const designSelect = document.getElementById("designSelect");
+       if (designSelect && initialDesign) {
+        designSelect.value = initialDesign+".csv";
+        }
+        loadDesignMetadata(designSelect.value, allDesignMetadata);
+
+
     });
 

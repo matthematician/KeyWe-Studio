@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KeyWe Studio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+
+  <!-- OLD -->
+  >>
+  <div class="container">
+    <header>
+      <h1>KeyWe Design Studio</h1>
+    </header>
+
+    <main class="main-layout">
+      <section class="left-panel">
+        <h2>Customize Your Design</h2>
+        <div class="form-group">
+          <label for="paletteSelect">Color Palette</label>
+          <select id="paletteSelect"></select>
+        </div>
+
+        <div class="form-group">
+          <label for="colorSelect1">Color 1</label>
+          <select class="colorSelect" id="colorSelect1"></select>
+        </div>
+
+        <div class="form-group">
+          <label for="colorSelect2">Color 2</label>
+          <select class="colorSelect" id="colorSelect2"></select>
+        </div>
+
+        <div class="form-group">
+          <label for="colorSelect3">Color 3</label>
+          <select class="colorSelect" id="colorSelect3"></select>
+        </div>
+
+        <div class="form-group">
+          <label for="designSelect">Design</label>
+          <select id="designSelect"></select>
+        </div>
+
+        <div class="form-group">
+          <label><input type="checkbox" id="b2bToggle" /> B2B Pricing</label>
+        </div>
+
+        <div class="form-group">
+          <label for="accentSelect">Accent</label>
+          <select id="accentSelect"></select>
+        </div>
+
+        <div class="form-group">
+          <label for="backdropSelect">Backdrop</label>
+          <select id="backdropSelect"></select>
+        </div>
+
+        <div class="form-group">
+          <fieldset id="deliveryOptions">
+            <legend>Delivery Type</legend>
+            <label><input type="radio" name="deliveryType" value="pickup" checked /> Grab & Go</label>
+            <label><input type="radio" name="deliveryType" value="delivery" /> Delivery</label>
+            <div style="margin-top: 0.5em;">
+              <label for="townSelect">Town</label>
+              <select id="townSelect" disabled>
+                <option value="">Choose a town...</option>
+              </select>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="form-group price-display">
+          <strong>Price:</strong> <span id="priceOutput">$0.00</span>
+        </div>
+
+        <div class="form-group">
+            <button id="swapButton">🔄 Swap Colors</button>
+          <button id="shuffleButton">🎲 Shuffle Colors</button>
+          <button id="undoShuffle">Undo</button>
+        </div>
+      </section>
+
+      <section class="right-panel">
+        <div class="visualizer" id="visualizerContainer">
+           <svg id="balloonSVG" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Define non-circle shapes -->
+            <defs>
+            <path id="heliumShape" d="m 35.52076,19.3118 c 0.08856,9.95124 -3.80396,15.94556 -8.385015,20.72581 -3.384757,3.53195 -4.978623,7.54544 -8.368683,8.09015 -0.169579,0.0273 -1.00478,0.87076 0.08978,1.67783 0.260449,0.19203 -0.872682,0.0197 -0.988781,0.022 -0.139447,-0.006 -1.327082,0.0334 -1.03678,-0.17365 0.991525,-0.70767 0.290533,-1.51895 0.104416,-1.56184 -3.595496,-0.82857 -3.449743,-2.91301 -7.8992,-8.07625 -5.499062,-6.38121 -8.682255,-10.9336 -9.032419,-20.02281 -0.208095,-10.85212 7.573878,-19.80196 17.381535,-19.99003 9.807657,-0.18807 18.038531,8.4553 18.135116,19.30898 z" />
+            </defs>
+        <g id="balloonGroup1">
+          <!-- <circle id="balloon1" cx="150" cy="200" r="40" fill="#FF0000" />
+          <image href="assets/sheenStd.png" x="110" y="160" width="80" height="80" /> -->
+        </g>
+        <g id="balloonGroup2">
+          <!-- <circle id="balloon2" cx="250" cy="180" r="40" fill="#FFFF00" />
+          <image href="assets/sheenStd.png" x="210" y="140" width="80" height="80" /> -->
+        </g>
+        <g id="balloonGroup3">
+          <!-- <circle id="balloon3" cx="350" cy="160" r="40" fill="#0000FF" />
+          <image href="assets/sheenStd.png" x="310" y="120" width="80" height="80" /> -->
+        </g>
+        <defs>
+        <filter id="balloonShadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="rgba(0,0,0,0.2)" />
+        </filter>
+        </defs>
+      </svg>
+          <!-- <img id="silhouette" src="assets/silhouette.png" alt="scale" /> -->
+        </div>
+        <div id="imageExport" class="export-buttons">
+          <button id="exportButton">Export Design</button>
+          <button id="saveButton">Save</button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 Keylium</p>
+    </footer>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <script src="keywe.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Londrina Solid', sans-serif;
   background: #f9f9fa;
   color: #333;
 }
@@ -63,7 +63,10 @@ select, input[type="checkbox"], input[type="radio"] {
   position: relative;
   width: 100%;
   padding-top: 66.67%; /* 600x400 */
-  background: #f2f2f2;
+  background-image: url(assets/eventhall.jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border: 1px solid #ccc;
 }
 
@@ -92,5 +95,77 @@ select, input[type="checkbox"], input[type="radio"] {
 
 .price-display {
   font-size: 1.2em;
+  color: #483063;
+}
+
+
+button {
+  padding: 0.6em 1.2em;
+  background-color: #483063;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 0.5em;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #6a4c91;
+}
+
+.price-display {
+  font-size: 1.2em;
+  color: #483063;
+  text-align: center;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px; /* Adjust spacing between buttons */
+  flex-wrap: wrap; /* Allow wrapping if screen is narrow */
+  margin-top: 10px;
+  align-items: center;
+  align-items: center; /* Ensures vertical alignment */
+  justify-content: center;
+}
+.button-row button {
+  padding: 6px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+  width: auto !important;
+  flex: 0 0 auto !important;
+  display: inline-block;
+}
+
+.selector-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.selector-group {
+  display: flexbox;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.selector-group label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.colorSelect {
+  padding: 6px 8px;
+  font-size: 14px;
+  width: 140px;
+}
+
+.price-display{
+  font-size: 1.75em;
   color: #483063;
 }
