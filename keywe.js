@@ -324,7 +324,7 @@ designSelect.addEventListener('change', () => {
         const colorCode = getColorCodeByName(colorName);
         let group = groups[group_id - 1];
         counter += 1;
-        console.log('Adding row: ', counter, ' in group ', group, ' of shape ', shapeType);
+        //console.log('Adding row: ', counter, ' in group ', group, ' of shape ', shapeType);
 
         if (shapeType.indexOf('circle') >=0 || !(shapeType)) {
         let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
