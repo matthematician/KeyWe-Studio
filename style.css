@@ -68,6 +68,7 @@ select, input[type="checkbox"], input[type="radio"] {
   background-position: center;
   background-repeat: no-repeat;
   border: 1px solid #ccc;
+
 }
 
 #balloonSVG {
@@ -169,3 +170,4 @@ button:hover {
   font-size: 1.75em;
   color: #483063;
 }
+

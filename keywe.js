@@ -1,6 +1,8 @@
 //import html2canvas from "html2canvas";
 
-function capturePreviewAsBlob(divElement, callback) {
+async function capturePreviewAsBlob(divElement, callback) {
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  setTimeout(() => {
   html2canvas(divElement, {
     useCORS: true,      // allows SVG images and external CSS
     backgroundColor: null  // preserves transparent backgrounds
@@ -9,6 +11,7 @@ function capturePreviewAsBlob(divElement, callback) {
       callback(blob);
     }, "image/png");
   });
+}, 500); // slight delay to ensure all SVGs are rendered
 }
 
 
@@ -168,7 +171,7 @@ const allDesignMetadata = {
               theOverlay.setAttribute('y', row.cy - row.radius);
               theOverlay.setAttribute('width', row.radius * 2);
               theOverlay.setAttribute('opacity', '0.5');
-        theOverlay.setAttribute('transform', `rotate(${row.rotation} ${row.cx} ${row.cy})`);
+              theOverlay.setAttribute('transform', `rotate(${row.rotation} ${row.cx} ${row.cy})`);
               theOverlay.setAttribute('z-index', 1 + parseInt(row.z_index));
                 group.appendChild(theOverlay);
             }
@@ -966,6 +969,7 @@ orderButton.addEventListener("click", () => {
     console.error("Preview container not found");
     return;
   }
+  
   capturePreviewAsBlob(previewDiv, (blob) => {
   // You now have a PNG blob of the entire visual!
   // Proceed with Cloudinary upload or display preview
