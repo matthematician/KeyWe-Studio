@@ -4,17 +4,44 @@ async function capturePreviewAsBlob(divElement, callback) {
   await new Promise((resolve) => requestAnimationFrame(resolve));
   setTimeout(() => {
   html2canvas(divElement, {
-    useCORS: true,      // allows SVG images and external CSS
-    backgroundColor: null  // preserves transparent backgrounds
+    allowTaint: true, // allows cross-origin images
+    useCORS: false,      // allows SVG images and external CSS
+    backgroundColor: '#fff'  // preserves transparent backgrounds
   }).then((canvas) => {
     canvas.toBlob((blob) => {
       callback(blob);
     }, "image/png");
   });
-}, 500); // slight delay to ensure all SVGs are rendered
+}, 50); // slight delay to ensure all SVGs are rendered
 }
 
+async function loadDeliveryChargesFromCSV(csvUrl) {
+  const response = await fetch(csvUrl);
+  const csvText = await response.text();
 
+  const lines = csvText.trim().split("\n");
+  const headers = lines[0].split(",").map(h => h.trim());
+
+  const townIndex = headers.indexOf("Town");
+  const zoneIndex = headers.indexOf("Zone");
+  const deliveryIndex = headers.indexOf("Delivery");
+
+  const deliveryDict = {};
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",").map(c => c.trim());
+    const town = cols[townIndex];
+    const zone = cols[zoneIndex];
+    const delivery = parseFloat(cols[deliveryIndex]);
+
+    deliveryDict[town] = {
+      zone: zone,
+      delivery: delivery
+    };
+  }
+
+  return deliveryDict;
+}
 
 const colors = [
       { name: 'Chrome Rose Gold', code: '#BA726D' },
@@ -153,6 +180,7 @@ const allDesignMetadata = {
               theOverlay.setAttribute('height', row.radius * 2);
               theOverlay.setAttribute('opacity', '0.5');
               theOverlay.setAttribute('z-index', 1+parseInt(row.z_index));
+              theOverlay.setAttribute('crossOrigin', 'Anonymous'); // Export fix
               group.appendChild(theOverlay);
               //console.log('Adding overlay with z-index:', 1+parseInt(row.z_index));
             }else if (row.shape === 'heliumShape' ){
@@ -173,7 +201,9 @@ const allDesignMetadata = {
               theOverlay.setAttribute('opacity', '0.5');
               theOverlay.setAttribute('transform', `rotate(${row.rotation} ${row.cx} ${row.cy})`);
               theOverlay.setAttribute('z-index', 1 + parseInt(row.z_index));
-                group.appendChild(theOverlay);
+              theOverlay.setAttribute('crossOrigin', 'Anonymous'); // Export fix
+
+              group.appendChild(theOverlay);
             }
 
 
@@ -246,7 +276,7 @@ const pricingToggle = document.getElementById('b2bToggle');
 
 // Attach listener (if not already defined elsewhere)
 document.getElementById('b2bToggle').addEventListener('change', updatePriceDisplay);
-
+document.getElementById('delivery').addEventListener('change', updatePriceDisplay);
 
     const silhouette = document.createElement('img');
     silhouette.src = 'assets/silhouette.png';
@@ -668,6 +698,9 @@ backdropSelect.id = 'backdropSelect';
   backdropSelect.appendChild(o);
 });
 
+var deliveryAmount = 0; // Default delivery amount
+var deliveryDict = {};
+
 backdropSelect.addEventListener('change', () => {
   const svg = document.getElementById('balloonSVG');
   const existing = document.getElementById('backdropShape');
@@ -732,22 +765,60 @@ priceDisplay.style.fontWeight = 'bold';
 priceDisplay.textContent = 'Price: $0';
 //document.querySelector('#studioControls').appendChild(priceDisplay);
 
+
+
 let currentDesignMeta = {};
 
 function loadDesignMetadata(filename, metadata) {
   currentDesignMeta = metadata[filename] || {};
+   loadDeliveryChargesFromCSV('assets/deliverycharges2025.csv')
+          .then(dict => {
+            populateDeliveryDropdown(dict);
+            deliveryDict = dict;
+            console.log("DEBUG: Delivery charges loaded:", deliveryDict);
+          });
+
   updatePriceDisplay();
   console.log("DEBUG: currentDesignMeta =", currentDesignMeta);
 }
 
 function updatePriceDisplay() {
-  const isB2B = document.getElementById('b2bToggle').checked;
-  //console.log("DEBUG: isB2B =", isB2B);
-  var price = isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price;
-  //if (typeof price !== 'number'){ console.log("Price was "+price); price = 0;}
-  //console.log("DEBUG: price =", price);
-  var priceDisplay = document.getElementById('priceOutput');
-  priceDisplay.innerHTML = `<strong>Your Price:</strong> $${price}${isB2B ? ' per month' : ''}`;
+
+  const deliverySelect = document.getElementById('delivery');
+  //console.log("DEBUG: deliverySelect =", deliverySelect);
+  //console.log("DEBUG: deliveryDict =", deliveryDict);
+  var delivCharge = 0;
+  loadDeliveryChargesFromCSV('assets/deliverycharges2025.csv')
+    .then(dict => {
+      //console.log("DeliverySelectValue:", deliverySelect.value);
+      if (deliverySelect.value == "Local Pickup") {
+        delivCharge = 0;
+        const isB2B = document.getElementById('b2bToggle').checked;
+
+        var price = (isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price);
+        //console.log("DEBUG: price =", price, " and delivery charge is ", delivCharge);
+
+       //if (typeof price !== 'number'){ console.log("Price was "+price); price = 0;}
+       //console.log("DEBUG: price =", price);
+        var priceDisplay = document.getElementById('priceOutput');
+        priceDisplay.innerHTML = `<strong>Your Price:</strong> $${price+delivCharge}${isB2B ? ' per month' : ''}`;
+      } else {
+        //console.log("DEBUG: Delivery charge is "+ dict[deliverySelect.value].delivery);
+        delivCharge = dict[deliverySelect.value].delivery;
+        const isB2B = document.getElementById('b2bToggle').checked;
+       //console.log("DEBUG: isB2B =", isB2B);
+       var price = (isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price);
+       //console.log("DEBUG: price =", price, " and delivery charge is ", delivCharge);
+
+       //if (typeof price !== 'number'){ console.log("Price was "+price); price = 0;}
+       //console.log("DEBUG: price =", price);
+        var priceDisplay = document.getElementById('priceOutput');
+        priceDisplay.innerHTML = `<strong>Your Price:</strong> $${price+delivCharge}${isB2B ? ' per month' : ''}`;
+      }
+  });
+  //console.log("DEBUG: deliveryAmount =", delivCharge);
+
+  
 }
 
 document.getElementById('b2bToggle').addEventListener('change', updatePriceDisplay);
@@ -838,6 +909,11 @@ const FORM_FIELDS = {
 };
 
 function createSplashForm() {
+  const isB2B = document.getElementById('b2bToggle').checked;
+  var price = isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price;
+  const deliverySelect = document.getElementById('delivery');
+  const method = deliverySelect.value === "Local Pickup" ? "Pickup" : "Delivery to " + deliverySelect.value;
+
   const modalHtml = `
     <div id="order-modal" style="
       position: fixed;
@@ -851,22 +927,53 @@ function createSplashForm() {
       <div style="background: white; padding: 2rem; border-radius: 10px; max-width: 500px; width: 100%;">
         <h2>Submit Your Order</h2>
         <form id="order-form">
-          <label>Name:<br><input type="text" id="name-input" required></label><br><br>
-          <label>Email:<br><input type="email" id="email-input" required></label><br><br>
-          <label>Phone:<br><input type="tel" id="phone-input"></label><br><br>
-          <label>Delivery Date:<br><input type="date" id="date-input" required></label><br><br>
+          <label class="compact">Name:<br><input type="text" id="name-input" required></label><br>
+          <label class="compact">Email:<br><input type="email" id="email-input" required></label><br>
+          <label class="compact">Phone:<br><input type="tel" id="phone-input"></label><br>
+          <label class="compact">Delivery Address Line 1:<br><input type="text" id="address1-input" placeholder="Street Address" required></label><br>
+          <label class="compact">Delivery Address Line 2:<br><input type="text" id="address2-input" placeholder="Apartment, suite, etc."></label><br>
+          <label class="compact">Town/City:<br><input type="text" style="disabled: true;" id="town-input" required disabled value="${deliverySelect.value}"></label><br>
+          <label class="compact">Date for ${method}:<br><input type="date" id="date-input" required></label><br>
           <div>
             <strong>Design Preview:</strong><br>
             <img id="preview-img" style="width: 100%; max-height: 300px; object-fit: contain; margin-top: 10px;" />
           </div><br>
-          <button type="submit">Submit Order</button>
+          <label>Special Requests/Instructions:<br><textarea rows="4" cols="40" id="special-requests" placeholder="Any special requests or instructions for your order? We will try to accommodate them!"></textarea></label><br>
+          <label>Your Price: ${price ? `<strong>$${price}</strong>` : '???'}</label><br>
+          <label><p>Click <strong>Submit Order</strong> to confirm your order. You will receive a confirmation email with details, and we'll send an invoice with payment information to confirm your design.</p></label><br>
+          <div style="display: flex; justify-content: space-between;">
+            <button type="submit" style="width:75%;">Submit Order</button>&nbsp;
+            <button type="button" id="back-button" style="width:20%;">Cancel</button>
+          </div>
+          
+          <input type="hidden" name="${FORM_FIELDS.image_url}" id="image-url-input">
         </form>
       </div>
     </div>
   `;
 
+  if (method === "Pickup") {
+    document.getElementById('address1-input').setAttribute('hidden', 'true');
+    document.getElementById('address2-input').setAttribute('hidden', 'true');
+    document.getElementById('town-input').setAttribute('hidden', 'true');
+  }
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 }
+
+function applyComputedStylesAsInline(element) {
+  const computedStyle = window.getComputedStyle(element);
+
+  for (let i = 0; i < computedStyle.length; i++) {
+    const propName = computedStyle[i];
+    const propValue = computedStyle.getPropertyValue(propName);
+
+    // Convert CSS property names (e.g., 'background-color') to camelCase (e.g., 'backgroundColor')
+    const jsPropName = propName.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+
+    element.style[jsPropName] = propValue;
+  }
+}
+
 
 function showOrderModal(designBlob) {
   createSplashForm();
@@ -875,6 +982,10 @@ function showOrderModal(designBlob) {
     document.getElementById("preview-img").src = reader.result;
   };
   reader.readAsDataURL(designBlob);
+
+  document.getElementById("back-button").addEventListener("click", () => {
+    document.getElementById("order-modal").remove();
+  });
 
   document.getElementById("order-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -903,6 +1014,10 @@ function showOrderModal(designBlob) {
       const uploadData = await uploadRes.json();
       const imageUrl = uploadData.secure_url;
 
+      const orderdeets = `Design: ${allDesignMetadata[document.getElementById('designSelect').value]['label']}\n` +
+        `Colors: ${Array.from(document.querySelectorAll('.colorSelect')).map(select => select.value).join(', ')}\n` +
+        `B2B Pricing: ${document.getElementById('b2bToggle').checked ? 'Yes' : 'No'}\n\n` + `Special Requests: ${document.getElementById('special-requests').value}`;
+
       // Submit to Google Form
       const formData = new FormData();
       formData.append(FORM_FIELDS.name, name);
@@ -911,6 +1026,15 @@ function showOrderModal(designBlob) {
       formData.append(FORM_FIELDS.delivery_date, deliveryDate);
       //formData.append(FORM_FIELDS.design_json, JSON.stringify(designJson, null, 2));
       formData.append(FORM_FIELDS.image_url, imageUrl);
+      const isB2B = document.getElementById('b2bToggle').checked;
+      var price = isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price;
+      formData.append(FORM_FIELDS.price_quote, price || "???");
+      formData.append(FORM_FIELDS.order_details, orderdeets);
+      formData.append(FORM_FIELDS.delivery, document.getElementById("delivery").value);
+      formData.append(FORM_FIELDS.address1, document.getElementById("address1-input").value);
+      formData.append(FORM_FIELDS.address2, document.getElementById("address2-input").value);
+      formData.append(FORM_FIELDS.town, document.getElementById("town-input").value);
+      formData.append(FORM_FIELDS.submitted, new Date().toISOString());
 
       await fetch(GOOGLE_FORM_ACTION, {
         method: "POST",
@@ -918,7 +1042,7 @@ function showOrderModal(designBlob) {
         body: formData
       });
 
-      alert("Your order was submitted successfully!");
+      alert("Your order was submitted successfully!\n\nWe will review and confirm your design shortly and follow up via the email address provided.\n\nWe look forward to serving you!");
       document.getElementById("order-modal").remove();
     } catch (err) {
       console.error("Error submitting order:", err);
@@ -959,7 +1083,32 @@ function svgElementToBlob(svgElement, callback) {
   image.src = url;
 }
 
+function downloadBlobAsFile(blob, filename) {
+  // Check for Microsoft Edge's specific download method for better compatibility
+  if (window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveOrOpenBlob(blob, filename);
+  } else {
+    // Create a temporary anchor element
+    const a = document.createElement('a');
+    document.body.appendChild(a); // Append to the body (can be hidden)
 
+    // Create a URL for the Blob
+    const url = window.URL.createObjectURL(blob);
+
+    // Set the anchor's href to the Blob URL and the download attribute for the filename
+    a.href = url;
+    a.download = filename;
+
+    // Programmatically click the anchor to initiate the download
+    a.click();
+
+    // Clean up: revoke the Object URL and remove the temporary anchor
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 0); // Use setTimeout to ensure the click event has time to register
+  }
+}
 
 const orderButton = document.getElementById("orderButton");
 orderButton.addEventListener("click", () => {
@@ -970,15 +1119,47 @@ orderButton.addEventListener("click", () => {
     return;
   }
   
-  capturePreviewAsBlob(previewDiv, (blob) => {
-  // You now have a PNG blob of the entire visual!
-  // Proceed with Cloudinary upload or display preview
-  showOrderModal(blob);
-});
+var uses = document.querySelectorAll('.balloon');
+uses.forEach(function(el) {
+  el.setAttribute('color',el.getAttribute('fill'));
+  el.setAttribute('flood-color',el.getAttribute('fill'));
+  el.setAttribute('stop-color',el.getAttribute('fill'));
+  el.setAttribute('background',el.getAttribute('fill'));
+  //applyComputedStylesAsInline(el);
+  console.log("DEBUG: Applied styles to element:", el);
+})
 
-});
+htmlToImage
+  .toBlob(previewDiv)
+  .then(function (blob) {
+    showOrderModal(blob);
+    console.log("DEBUG: Blob created:", blob);
+    // downloadBlobAsFile(blob, 'balloon_design_preview.png');
+  });
 
+  });
+  
+function populateDeliveryDropdown(deliveryDict) {
+  const select = document.getElementById("delivery");
 
+  // Add the default Local Pickup option
+  const pickupOption = document.createElement("option");
+  pickupOption.value = "Local Pickup";
+  pickupOption.textContent = "Local Pickup (Free!)";
+  select.appendChild(pickupOption);
+
+  // Sort town names alphabetically
+  const towns = Object.keys(deliveryDict).sort();
+
+  // Add each town as an option
+  for (const town of towns) {
+    const deliveryAmount = deliveryDict[town].delivery > 0 ? deliveryDict[town].delivery : "Free!";
+    const option = document.createElement("option");
+    option.value = town;
+    option.textContent = `${town} (${deliveryAmount > 0 ? "+$" : ""}${deliveryAmount})`;
+    select.appendChild(option);
+  }
+}
 
 
 
@@ -992,5 +1173,6 @@ orderButton.addEventListener("click", () => {
         }
         loadDesignMetadata(designSelect.value, allDesignMetadata);
 
+       
     });
 

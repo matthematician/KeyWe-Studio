@@ -41,7 +41,13 @@ function createSplashForm() {
           <label>Name:<br><input type="text" id="name-input" required></label><br><br>
           <label>Email:<br><input type="email" id="email-input" required></label><br><br>
           <label>Phone:<br><input type="tel" id="phone-input"></label><br><br>
-          <label>Delivery Date:<br><input type="date" id="date-input" required></label><br><br>
+          <label>Pickup or Delivery:<br>
+            <select id="delivery-input" required>
+              <option value="pickup">Pickup</option>
+              <option value="delivery">Delivery</option>
+            </select>
+          </label><br><br>
+          <label>Date for Pickup:<br><input type="date" id="date-input" required></label><br><br>
           <div>
             <strong>Design Preview:</strong><br>
             <img id="preview-img" style="width: 100%; max-height: 300px; object-fit: contain; margin-top: 10px;" />

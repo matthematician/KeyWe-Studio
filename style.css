@@ -2,7 +2,7 @@ body {
   margin: 0;
   font-family: 'Londrina Solid', sans-serif;
   background: #f9f9fa;
-  color: #333;
+  /*color: #333; */
 }
 
 .container {
@@ -52,6 +52,11 @@ label {
   display: block;
   font-weight: 500;
   margin-bottom: 0.3em;
+}
+
+label.compact {
+  font-weight: 600;
+  margin: 0; padding: 0;
 }
 
 select, input[type="checkbox"], input[type="radio"] {
