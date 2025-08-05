@@ -910,7 +910,11 @@ const FORM_FIELDS = {
 
 function createSplashForm() {
   const isB2B = document.getElementById('b2bToggle').checked;
-  var price = isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price;
+  var price = 69;
+  const priceOutput = document.getElementById('priceOutput');
+  if (priceOutput) {
+    price = parseFloat(priceOutput.textContent.replace(/[^0-9.-]+/g, ""));
+  }
   const deliverySelect = document.getElementById('delivery');
   const method = deliverySelect.value === "Local Pickup" ? "Pickup" : "Delivery to " + deliverySelect.value;
 
@@ -987,6 +991,8 @@ function showOrderModal(designBlob) {
     document.getElementById("order-modal").remove();
   });
 
+ 
+
   document.getElementById("order-form").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -1026,8 +1032,13 @@ function showOrderModal(designBlob) {
       formData.append(FORM_FIELDS.delivery_date, deliveryDate);
       //formData.append(FORM_FIELDS.design_json, JSON.stringify(designJson, null, 2));
       formData.append(FORM_FIELDS.image_url, imageUrl);
-      const isB2B = document.getElementById('b2bToggle').checked;
-      var price = isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price;
+      
+       var price = 69;
+        const priceOutput = document.getElementById('priceOutput');
+        if (priceOutput) {
+          price = parseFloat(priceOutput.textContent.replace(/[^0-9.-]+/g, ""));
+        }
+
       formData.append(FORM_FIELDS.price_quote, price || "???");
       formData.append(FORM_FIELDS.order_details, orderdeets);
       formData.append(FORM_FIELDS.delivery, document.getElementById("delivery").value);
