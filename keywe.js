@@ -204,10 +204,18 @@ const allDesignMetadata = {
               theOverlay.setAttribute('crossOrigin', 'Anonymous'); // Export fix
 
               group.appendChild(theOverlay);
+            }else if (row.shape.startsWith("image(")) {
+              // Render image balloon shape
+              const imageUrl = row.shape.slice(6, -1);
+              let image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+              image.setAttribute('x', row.cx - row.radius);
+              image.setAttribute('y', row.cy - row.radius);
+              image.setAttribute('width', row.radius * 2);
+              image.setAttribute('height', row.radius * 2);
+              image.setAttribute('href', imageUrl);
+              //image.setAttribute('class', 'balloon');
+              group.appendChild(image);
             }
-
-
-            
           });
         }
       });
@@ -373,8 +381,8 @@ designSelect.addEventListener('change', () => {
         let group = groups[group_id - 1];
         counter += 1;
         //console.log('Adding row: ', counter, ' in group ', group, ' of shape ', shapeType);
-
         if (shapeType.indexOf('circle') >=0 || !(shapeType)) {
+                  // Render circular balloon shape
         let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         circle.setAttribute('cx', cx);
         circle.setAttribute('cy', cy);
@@ -400,6 +408,7 @@ designSelect.addEventListener('change', () => {
         group.appendChild(overlay);
       
     } else if (shapeType === 'heliumShape') {
+      // Render helium balloon shape
           let heliumShape = document.createElementNS('http://www.w3.org/2000/svg', 'use');
           heliumShape.setAttribute('href', '#heliumShape');
           heliumShape.setAttribute('class', 'balloon');
@@ -421,6 +430,18 @@ designSelect.addEventListener('change', () => {
         overlay.setAttribute('class', 'balloon');
         overlay.setAttribute('opacity', '0.5');
         group.appendChild(overlay);
+        } else if (shapeType.startsWith("image(")) {
+          // Render image balloon shape
+                    console.log('Adding image balloon of shape:', shapeType, 'with z-index:', z_index);
+          const imageUrl = shapeType.slice(6, -1);
+          let image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          image.setAttribute('x', cx - radius);
+          image.setAttribute('y', cy - radius);
+          image.setAttribute('width', radius * 2);
+          image.setAttribute('height', radius * 2);
+          image.setAttribute('href', imageUrl);
+          //image.setAttribute('class', 'balloon');
+          group.appendChild(image);
         }
       });
     
@@ -564,6 +585,18 @@ shuffleBtn.addEventListener('click', () => {
         overlay.setAttribute('opacity', '0.5'); 
 
         group.appendChild(overlay);
+        }else if (shapeType.startsWith("image(")) {
+          // Render image balloon shape
+          console.log('Adding image balloon of shape:', shapeType, 'with z-index:', z_index);
+          const imageUrl = shapeType.slice(6, -1);
+          let image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          image.setAttribute('x', cx - radius);
+          image.setAttribute('y', cy - radius);
+          image.setAttribute('width', radius * 2);
+          image.setAttribute('height', radius * 2);
+          image.setAttribute('href', imageUrl);
+          //image.setAttribute('class', 'balloon');
+          group.appendChild(image);
         }
           });
         });
@@ -780,6 +813,7 @@ function loadDesignMetadata(filename, metadata) {
 
   updatePriceDisplay();
   console.log("DEBUG: currentDesignMeta =", currentDesignMeta);
+
 }
 
 function updatePriceDisplay() {
@@ -934,10 +968,11 @@ function createSplashForm() {
           <label class="compact">Name:<br><input type="text" id="name-input" required></label><br>
           <label class="compact">Email:<br><input type="email" id="email-input" required></label><br>
           <label class="compact">Phone:<br><input type="tel" id="phone-input"></label><br>
-          <label class="compact">Delivery Address Line 1:<br><input type="text" id="address1-input" placeholder="Street Address" required></label><br>
-          <label class="compact">Delivery Address Line 2:<br><input type="text" id="address2-input" placeholder="Apartment, suite, etc."></label><br>
-          <label class="compact">Town/City:<br><input type="text" style="disabled: true;" id="town-input" required disabled value="${deliverySelect.value}"></label><br>
+          <label class="compact" id="address1-label">Delivery Address Line 1:<br><input type="text" id="address1-input" placeholder="Street Address" required></label><br>
+          <label class="compact" id="address2-label">Delivery Address Line 2:<br><input type="text" id="address2-input" placeholder="Apartment, suite, etc."></label><br>
+          <label class="compact" id="town-label">Town/City:<br><input type="text" style="disabled: true;" id="town-input" required disabled value="${deliverySelect.value}"></label><br>
           <label class="compact">Date for ${method}:<br><input type="date" id="date-input" required></label><br>
+          <label class="compact" id="pickup-location-label" style="display:none;">Pickup at:<br><a href="https://maps.app.goo.gl/jC4GJQyQXntMBhGu6" target-"_new">Keylium HQ</a><br>41 Janebar Circle<br>Plymouth, MA 02360</label><br>
           <div>
             <strong>Design Preview:</strong><br>
             <img id="preview-img" style="width: 100%; max-height: 300px; object-fit: contain; margin-top: 10px;" />
@@ -956,12 +991,18 @@ function createSplashForm() {
     </div>
   `;
 
-  if (method === "Pickup") {
+
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+    if (method === "Pickup") {
+      document.getElementById('pickup-location-label').setAttribute('style', 'display: block;');
+    document.getElementById('address1-label').setAttribute('style', 'display: none;');
+    document.getElementById('address2-label').setAttribute('style', 'display: none;');
+    document.getElementById('town-label').setAttribute('style', 'display: none;');
     document.getElementById('address1-input').setAttribute('hidden', 'true');
     document.getElementById('address2-input').setAttribute('hidden', 'true');
     document.getElementById('town-input').setAttribute('hidden', 'true');
   }
-  document.body.insertAdjacentHTML("beforeend", modalHtml);
 }
 
 function applyComputedStylesAsInline(element) {

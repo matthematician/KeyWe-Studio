@@ -16,3 +16,4 @@ group_id,cx,cy,radius,z_index,shape,rotation
 3,218,115,17.1875,33,heliumShape,-3
 3,151,206,17.1875,35,heliumShape,-7
 3,116,323,17.1875,37,heliumShape,-7
+3,150,250,50,39,image(assets/silverstar.png),0
