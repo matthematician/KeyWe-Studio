@@ -49,7 +49,7 @@ group_id,cx,cy,radius,z_index,shape,rotation
 3,159,309,6.25,99,circleShape,0
 3,142,309,6.25,101,circleShape,0
 3,172,208,6.25,103,circleShape,0
-2,163,125,37.5,3,circleShape,0
+2,160,125,37.5,3,circleShape,0
 1,113,332,48,105,image(assets/silverstar.png),0
 1,196,176,48,107,image(assets/silverstar.png),0
 1,160,250,60,109,image(assets/silverfringe.png),0

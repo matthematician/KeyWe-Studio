@@ -87,10 +87,18 @@ function getQueryParam(param) {
 
 // Sample design metadata JSON
 const allDesignMetadata = {
-  "threetest.csv": {
-    base_price: 45,
-    subscription_price: 35,
-    label: "Sloppy Test Garland",
+  "numberstack1.csv": {
+    base_price: 60,
+    subscription_price: 40,
+    label: "Number Stack: 1",
+    featured: true,
+    accent_coords: [300, 240],
+    backdrops_compatible: [1, 3]
+  },
+  "numberstack16.csv": {
+    base_price: 80,
+    subscription_price: 70,
+    label: "Number Stack: 16",
     featured: true,
     accent_coords: [300, 240],
     backdrops_compatible: [1, 3]
