@@ -43,6 +43,45 @@ async function loadDeliveryChargesFromCSV(csvUrl) {
   return deliveryDict;
 }
 
+const checkbox = document.getElementById("custom-design-toggle");
+
+/**
+ * Determines if an RGB color is light based on relative luminance.
+ * @param {number} r - Red (0–255)
+ * @param {number} g - Green (0–255)
+ * @param {number} b - Blue (0–255)
+ * @returns {boolean} - True if color is light (luminance > 0.5)
+ */
+function isLightColor(hex) {
+  // Remove # if present
+  hex = hex.replace(/^#/, "");
+
+  // Parse r, g, b values
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Normalize to sRGB
+  const rs = r / 255;
+  const gs = g / 255;
+  const bs = b / 255;
+
+  // Gamma correction
+  const toLinear = (c) =>
+    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+
+  const rLin = toLinear(rs);
+  const gLin = toLinear(gs);
+  const bLin = toLinear(bs);
+
+  // Compute relative luminance
+  const luminance = 0.2126 * rLin + 0.7152 * gLin + 0.0722 * bLin;
+
+  console.log(`Luminance: ${luminance} for RGB(${r}, ${g}, ${b})`);
+  return luminance > 0.5;
+}
+
+
 const colors = [
       { name: 'Chrome Rose Gold', code: '#BA726D' },
       { name: 'Cameo Pink', code: '#E9CCC8' },
@@ -99,6 +138,14 @@ const allDesignMetadata = {
     base_price: 80,
     subscription_price: 70,
     label: "Number Stack: 16",
+    featured: true,
+    accent_coords: [300, 240],
+    backdrops_compatible: [1, 3]
+  },
+  "roundbackdrop9.csv": {
+    base_price: 120,
+    subscription_price: 90,
+    label: "Backdrop Arch & 9' Garland",
     featured: true,
     accent_coords: [300, 240],
     backdrops_compatible: [1, 3]
@@ -223,8 +270,28 @@ const allDesignMetadata = {
               image.setAttribute('href', imageUrl);
               //image.setAttribute('class', 'balloon');
               group.appendChild(image);
+            }else if (row.shape.startsWith("halfRound")) {
+              // Render half round backdrop shape
+              const theBalloon = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+            theBalloon.setAttribute('href', '#halfRound');
+            theBalloon.setAttribute('class', 'balloon');
+            theBalloon.setAttribute('transform', `rotate(${row.rotation} ${row.cx} ${row.cy}) translate(${row.cx - row.radius} ${row.cy - row.radius}) scale(${row.radius / 17.75})`);
+            theBalloon.setAttribute('z-index', '-1');
+            theBalloon.setAttribute('fill', colorCode);
+            theBalloon.setAttribute('filter', 'brightness(0.9)');
+            //theBalloon.setAttribute('opacity', '0.8');
+            group.appendChild(theBalloon);
             }
           });
+          // Include the custom design image (hidden if appropriate)
+          const group = document.getElementById('balloonGroup1'); // Use the first group for custom design
+          const customImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          customImg.setAttribute('href', isLightColor(getColorCodeByName(selectors[0].select.value)) ? 'assets/custom-black.png' : 'assets/custom-white.png');
+          customImg.setAttribute('z-index', '0');
+          customImg.setAttribute('id', 'custom-vinyl');
+          customImg.setAttribute('transform', `translate(150 150)`); // Adjust as needed
+          customImg.style.display = document.getElementById("custom-design-toggle").checked ? 'block' : 'none'; // Initially hidden
+          group.appendChild(customImg);
         }
       });
     }
@@ -288,6 +355,13 @@ const pricingToggle = document.getElementById('b2bToggle');
 //pricingToggle.style.display = 'block';
 //document.querySelector('#studioControls').appendChild(pricingToggle);
 
+// Add event listener to toggle custom design checkbox
+checkbox.addEventListener("change", function () {
+  const design = document.getElementById('custom-vinyl')
+  design.setAttribute('href',isLightColor(getColorCodeByName(selectors[0].select.value)) ? 'assets/custom-black.png' : 'assets/custom-white.png');
+  design.style.display = this.checked ? 'block' : 'none';
+
+});
 
 
 // Attach listener (if not already defined elsewhere)
@@ -450,8 +524,30 @@ designSelect.addEventListener('change', () => {
           image.setAttribute('href', imageUrl);
           //image.setAttribute('class', 'balloon');
           group.appendChild(image);
+        }else if (shapeType === 'halfRound') {
+      // Render helium balloon shape
+          let heliumShape = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+          heliumShape.setAttribute('href', '#halfRound');
+          heliumShape.setAttribute('class', 'balloon');
+          heliumShape.setAttribute('transform', `rotate(${rotation} ${cx} ${cy}) translate(${cx - radius} ${cy - radius}) scale(${radius / 17.75})`);
+          heliumShape.setAttribute('z-index', '-1');
+          heliumShape.setAttribute('fill', colorCode);
+          heliumShape.setAttribute('filter', 'brightness(0.9)');
+
+          
+
+          group.appendChild(heliumShape);
         }
       });
+      // Include the custom design image (hidden if appropriate)
+      const group = document.getElementById('balloonGroup1'); // Use the first group for custom design
+          const customImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          customImg.setAttribute('href', isLightColor(getColorCodeByName(selectors[0].select.value)) ? 'assets/custom-black.png' : 'assets/custom-white.png');
+          customImg.setAttribute('z-index', '0');
+                    customImg.setAttribute('id', 'custom-vinyl');
+          customImg.setAttribute('transform', `translate(150 150)`); // Adjust as needed
+          customImg.style.display = document.getElementById("custom-design-toggle").checked ? 'block' : 'none'; // Initially hidden
+          group.appendChild(customImg);
     
     });
     // Rebind backdrop color update listeners on color dropdowns
@@ -555,6 +651,8 @@ shuffleBtn.addEventListener('click', () => {
         circle.setAttribute('cy', cy);
         circle.setAttribute('r', radius);
         circle.setAttribute('fill', colorCode);
+        circle.setAttribute('z-index', z_index);
+
         circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
         circle.setAttribute('filter', 'url(#balloonShadow)');
 
@@ -568,6 +666,7 @@ shuffleBtn.addEventListener('click', () => {
         overlay.setAttribute('height', radius * 2);
         overlay.setAttribute('href', colorName.includes('Chrome') ? 'assets/sheenChr.png' : 'assets/sheenStd.png');
         overlay.setAttribute('class', 'balloon');
+        overlay.setAttribute('z-index', 1 + parseInt(z_index));
         overlay.setAttribute('opacity', '0.5'); 
         group.appendChild(overlay);
       
@@ -591,6 +690,7 @@ shuffleBtn.addEventListener('click', () => {
         overlay.setAttribute('href', colorName.includes('Chrome') ? 'assets/heliumSheenChr.png' : 'assets/heliumSheenStd.png');
         overlay.setAttribute('class', 'balloon');
         overlay.setAttribute('opacity', '0.5'); 
+        overlay.setAttribute('z-index', 1 + parseInt(z_index));
 
         group.appendChild(overlay);
         }else if (shapeType.startsWith("image(")) {
@@ -605,8 +705,30 @@ shuffleBtn.addEventListener('click', () => {
           image.setAttribute('href', imageUrl);
           //image.setAttribute('class', 'balloon');
           group.appendChild(image);
+        }else if (shapeType.indexOf('halfRound')>=0) {
+          const heliumShape = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+          heliumShape.setAttribute('href', '#halfRound');
+          heliumShape.setAttribute('class', 'balloon');
+          heliumShape.setAttribute('transform', `rotate(${rotation} ${cx} ${cy}) translate(${cx - radius} ${cy - radius}) scale(${radius / 17.75})`);
+          heliumShape.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
+          heliumShape.setAttribute('z-index', '-1');
+          heliumShape.setAttribute('fill', colorCode);
+          heliumShape.setAttribute('filter', 'brightness(0.9)');
+
+          // heliumShape.setAttribute('opacity', '0.8');
+          group.appendChild(heliumShape);
         }
           });
+          // Include the custom design image (hidden if appropriate)
+                const group = document.getElementById('balloonGroup1'); // Use the first group for custom design
+
+          const customImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          customImg.setAttribute('href', isLightColor(getColorCodeByName(selectors[0].select.value)) ? 'assets/custom-black.png' : 'assets/custom-white.png');
+          customImg.setAttribute('z-index', '0');
+                    customImg.setAttribute('id', 'custom-vinyl');
+          customImg.setAttribute('transform', `translate(150 150)`); // Adjust as needed
+          customImg.style.display = document.getElementById("custom-design-toggle").checked ? 'block' : 'none'; // Initially hidden
+          group.appendChild(customImg);
         });
     });
 });
