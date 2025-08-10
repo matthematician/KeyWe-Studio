@@ -1,0 +1,37 @@
+Name,Kind,Colors
+Custom Colors...,custom,
+-- Holidays --,separator,
+Valentine's Classic,palette,Standard Red|Baby Pink|Standard White
+Valentine's Metallic,palette,Chrome Rose Gold|Cameo Pink|Chrome Red
+St. Patrick's Day,palette,Forest Green|Lime Green|Chrome Gold
+Easter,palette,Lavender / Lilac|Sage / Tea Green|Pastel Yellow
+Patriotic,palette,Standard Red|Standard White|Standard Blue
+Halloween,palette,Standard Orange|Standard Black|Lime Green
+Thanksgiving,palette,Latte Brown|Goldenrod|Standard Orange
+Hanukkah,palette,Navy Blue|Chrome Silver|Standard White
+Christmas Classic,palette,Standard Red|Forest Green|Chrome Gold
+Christmas Elegant,palette,Chrome Gold|Chrome Silver|Standard White
+-- Events --,separator,
+Blue Baby Shower,palette,Baby Blue|Standard White|Fog Gray
+Pink Baby Shower,palette,Baby Pink|Standard White|Cameo Pink
+Yellow Baby Shower,palette,Pastel Yellow|Standard White|Goldenrod
+Bridal Classic,palette,Standard White|Chrome Silver|Chrome White Gold
+Bridal Modern,palette,Standard White|Cameo Pink|White Sand
+50th Birthday,palette,Standard Black|Chrome Gold|Chrome White Gold
+Retirement,palette,Navy Blue|Chrome Gold|Fog Gray
+-- Schools --,separator,
+Graduation Default,palette,Chrome Gold|Standard Black|Standard White
+Plymouth South,palette,Standard Black|Turquoise|Standard Black
+Plymouth North,palette,Navy Blue|Fog Gray|Goldenrod
+Bourne High,palette,Plum Purple|Standard Black|Standard White
+Sandwich High,palette,Baby Blue|Navy Blue|Standard White
+Wareham High,palette,Plum Purple|Goldenrod|Standard White
+Silver Lake RHS,palette,Standard Red|Fog Gray|Standard White
+-- Colleges --,separator,
+Bridgewater State,palette,Standard Red|Standard White|Standard Black
+UMass-Dartmouth,palette,Navy Blue|Goldenrod|Standard White
+Mass Maritime,palette,Navy Blue|Latte Brown|Standard White
+Stonehill,palette,Plum Purple|Standard Black|Standard White
+Wheaton,palette,Navy Blue|Fog Gray|Standard White
+-- Other --,separator,
+Keylium Music & Events,palette,Plum Purple|Fog Gray|Standard White

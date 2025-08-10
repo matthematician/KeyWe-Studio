@@ -95,37 +95,70 @@ function updateCustomColor(){
   document.getElementById('custom-vinyl').style.opacity = checkbox.checked ? '1' : '0';
 }
 
+const colors = [];
 
-const colors = [
-      { name: 'Chrome Rose Gold', code: '#BA726D' },
-      { name: 'Cameo Pink', code: '#E9CCC8' },
-      { name: 'Chrome Red', code: '#C2463E' },
-      { name: 'Standard Red', code: '#FF0000' },
-      { name: 'Standard Orange', code: '#EF6B24' },
-      { name: 'White Sand', code: '#D8C6B5' },
-      { name: 'Chrome Gold', code: '#BF9855' },
-      { name: 'Latte Brown', code: '#C39958' },
-      { name: 'Goldenrod', code: '#FFD46E' },
-      { name: 'Chrome White Gold', code: '#EFECE2' },     
-      { name: 'Pastel Yellow', code: '#FBF8D2' },
-      { name: 'Lime Green', code: '#8FC73E' },
-      { name: 'Forest Green', code: '#218B21' },     
-      { name: 'Sage / Tea Green', code: '#B2DDC3' },
-      { name: 'Baby Blue', code: '#A0DAEB' },
-      { name: 'Turquoise', code: '#37B9CA' },
-      { name: 'Carolina Blue', code: '#49808B'},
-      { name: 'Navy Blue', code: '#1F337D' },
-      { name: 'Standard Blue', code: '#0000FF' },
-      { name: 'Lavender / Lilac', code: '#C4B9D9' },
-      { name: 'Plum Purple', code: '#5E1791' },
-      { name: 'Baby Pink', code: '#F7CEDE' },
-      { name: 'Flamingo Pink', code: '#F65B85' },
-      { name: 'Standard Black', code: '#000000' },
-      { name: 'Chrome Silver', code: '#B4B4B4' },
-      { name: 'Fog Gray', code: '#D5D5D5' },
-      { name: 'Standard White', code: '#FFFFFF' },
-      { name: 'Macaron Assorted', code: '#FFFFFF' }
-    ];
+async function loadColorsIntoGlobal(csvUrl) {
+  const res = await fetch(csvUrl);
+  const text = await res.text();
+
+  const lines = text.trim().split("\n");
+  const headers = lines[0].split(",").map(h => h.trim());
+
+  const nameIdx = headers.findIndex(h => /^name$/i.test(h));
+  const codeIdx = headers.findIndex(h => /^(hex|code)$/i.test(h));
+
+  // Clear any existing colors to avoid duplicates
+  colors.length = 0;
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",").map(c => c.trim());
+    if (!cols[nameIdx] || !cols[codeIdx]) continue;
+    colors.push({ name: cols[nameIdx], code: cols[codeIdx] });
+  }
+}
+
+// --- Helpers ---
+
+// Tolerant CSV parser (handles quotes, commas, newlines in quotes)
+function parseCSV(str) {
+  const rows = [];
+  let row = [];
+  let cur = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i], next = str[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && next === '"') { cur += '"'; i++; } // escaped quote ""
+      else { inQuotes = !inQuotes; }
+    } else if (ch === ',' && !inQuotes) {
+      row.push(cur); cur = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (cur.length || row.length) { row.push(cur); rows.push(row); }
+      cur = ''; row = [];
+      // swallow CRLF
+      if (ch === '\r' && next === '\n') i++;
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur.length || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+
+function normalizeHex(hex) {
+  let h = hex.replace(/^#/, '').toLowerCase();
+  if (h.length === 3) {
+    h = h.split('').map(c => c + c).join(''); // #abc -> #aabbcc
+  }
+  if (!/^[0-9a-f]{6}$/.test(h)) {
+    console.warn('Skipping invalid hex:', hex);
+    return null;
+  }
+  return `#${h}`;
+}
+
 
     function getColorCodeByName(name) {
       const match = colors.find(c => c.name === name);
@@ -138,81 +171,6 @@ function getQueryParam(param) {
 }
 
 
-// Sample design metadata JSON
-/* const allDesignMetadata = {
-  "numberstack1.csv": {
-    base_price: 60,
-    subscription_price: 40,
-    label: "Number Stack: 1",
-    customizable: false,
-    accent_coords: [300, 240],
-    backdrops_compatible: [1, 3]
-  },
-  "numberstack16.csv": {
-    base_price: 80,
-    subscription_price: 70,
-    label: "Number Stack: 16",
-    customizable: false,
-    accent_coords: [300, 240],
-    backdrops_compatible: [1, 3]
-  },
-  "roundbackdrop9.csv": {
-    base_price: 120,
-    subscription_price: 90,
-    label: "Backdrop Arch & 9' Garland",
-    customizable: true,
-    accent_coords: [300, 240],
-    backdrops_compatible: [1, 3]
-  },
-  "organic12.csv": {
-    base_price: 120,
-    subscription_price: 100,
-    label: "Organic Garland 12ft",
-        customizable: false,
-    accent_coords: [180, 120],
-    backdrops_compatible: [2, 4, 5]
-  },
-   "freestand9.csv": {
-    base_price: 100,
-    subscription_price: 80,
-    label: "Freestanding Garland 9ft",
-        customizable: false,
-    accent_coords: [180, 120],
-    backdrops_compatible: [2, 4, 5]
-  },
-   "crazytower.csv": {
-    base_price: 100,
-    subscription_price: 80,
-    label: "Crazy Tower",
-        customizable: true,
-    accent_coords: [180, 120],
-    backdrops_compatible: [2, 4, 5]
-  },
-  "stringofpearls.csv": {
-    base_price: 60,
-    subscription_price: 50,
-    label: "String of Pearls Arch (Helium)",
-        customizable: false,
-    accent_coords: [180, 120],
-    backdrops_compatible: [2, 4, 5]
-  },
-  "classicspiralarch.csv": {
-    base_price: 175,
-    subscription_price: 150,
-    label: "Full Spiral Arch (Air Filled)",
-        customizable: false,
-    accent_coords: [180, 120],
-    backdrops_compatible: [2, 4, 5]
-  },
-  "rotatetest.csv": {
-    base_price: 80,
-    subscription_price: 60,
-    label: "Rotation Test Design",
-        customizable: false,
-    accent_coords: [400, 300],
-    backdrops_compatible: [1, 3]
-  },
-}; */
 
     function renderDesignFromCSV(url) {
       const designName = url.split('/').pop();
@@ -380,9 +338,7 @@ function getQueryParam(param) {
 
 // Create B2B Pricing checkbox
 const pricingToggle = document.getElementById('b2bToggle');
-//pricingToggle.innerHTML = '<input type="checkbox" id="b2bPricing"> B2B Pricing';
-//pricingToggle.style.display = 'block';
-//document.querySelector('#studioControls').appendChild(pricingToggle);
+
 
 // Add event listener to toggle custom design checkbox
 checkbox.addEventListener("change", function () {
@@ -416,44 +372,58 @@ document.getElementById('delivery').addEventListener('change', updatePriceDispla
     branding.style.zIndex = '0';
     document.querySelector('#visualizerContainer').appendChild(branding);
 
-    const palettes = [
-{ name: 'Custom Colors...', custom: true },
-{ name: '-- Holidays --', separator: true },
-{ name: 'Valentine\'s Classic', colors: ['Standard Red', 'Baby Pink', 'Standard White'] },
-{ name: 'Valentine\'s Metallic', colors: ['Chrome Rose Gold', 'Cameo Pink', 'Chrome Red'] },
-{ name: 'St. Patrick\'s Day', colors: ['Forest Green', 'Lime Green', 'Chrome Gold'] },
-{ name: 'Easter', colors: ['Lavender / Lilac', 'Sage / Tea Green', 'Pastel Yellow'] },
-{ name: 'Patriotic', colors: ['Standard Red', 'Standard White', 'Standard Blue'] },
-{ name: 'Halloween', colors: ['Standard Orange', 'Standard Black', 'Lime Green'] },
-{ name: 'Thanksgiving', colors: ['Latte Brown', 'Goldenrod', 'Standard Orange'] },
-{ name: 'Hanukkah', colors: ['Navy Blue', 'Chrome Silver', 'Standard White'] },
-{ name: 'Christmas Classic', colors: ['Standard Red', 'Forest Green', 'Chrome Gold'] },
-{ name: 'Christmas Elegant', colors: ['Chrome Gold', 'Chrome Silver', 'Standard White'] },
-{ name: '-- Events --', separator: true },
-{ name: 'Blue Baby Shower', colors: ['Baby Blue', 'Standard White', 'Fog Gray'] },
-{ name: 'Pink Baby Shower', colors: ['Baby Pink', 'Standard White', 'Cameo Pink'] },
-{ name: 'Yellow Baby Shower', colors: ['Pastel Yellow', 'Standard White', 'Goldenrod'] },
-{ name: 'Bridal Classic', colors: ['Standard White', 'Chrome Silver', 'Chrome White Gold'] },
-{ name: 'Bridal Modern', colors: ['Standard White', 'Cameo Pink', 'White Sand'] },
-{ name: '50th Birthday', colors: ['Standard Black', 'Chrome Gold', 'Chrome White Gold'] },
-{ name: 'Retirement', colors: ['Navy Blue', 'Chrome Gold', 'Fog Gray'] },
-{ name: '-- Schools --', separator: true },
-{ name: 'Graduation Default', colors: ['Chrome Gold', 'Standard Black', 'Standard White'] },
-{ name: 'Plymouth South', colors: ['Standard Black', 'Turquoise', 'Standard Black'] },
-{ name: 'Plymouth North', colors: ['Navy Blue', 'Fog Gray', 'Goldenrod'] },
-{ name: 'Bourne High', colors: ['Plum Purple', 'Standard Black', 'Standard White'] },
-{ name: 'Sandwich High', colors: ['Baby Blue', 'Navy Blue', 'Standard White'] },
-{ name: 'Wareham High', colors: ['Plum Purple', 'Goldenrod', 'Standard White'] },
-{ name: 'Silver Lake RHS', colors: ['Standard Red', 'Fog Gray', 'Standard White'] },
-{ name: '-- Colleges --', separator: true },
-{ name: 'Bridgewater State', colors: ['Standard Red', 'Standard White', 'Standard Black'] },
-{ name: 'UMass-Dartmouth', colors: ['Navy Blue', 'Goldenrod', 'Standard White'] },
-{ name: 'Mass Maritime', colors: ['Navy Blue', 'Latte Brown', 'Standard White'] },
-{ name: 'Stonehill', colors: ['Plum Purple', 'Standard Black', 'Standard White'] },
-{ name: 'Wheaton', colors: ['Navy Blue', 'Fog Gray', 'Standard White'] },
-{ name: '-- Other --', separator: true },
-{ name: 'Keylium Music & Events', colors: ['Plum Purple', 'Fog Gray', 'Standard White'] }
-    ];
+const palettes = [];
+
+
+async function loadPalettesIntoGlobal(csvUrl) {
+  const res = await fetch(csvUrl);
+  const text = await res.text();
+
+  const rows = parseCSV(text);
+  if (!rows.length) return;
+
+  // Header indices (case-insensitive)
+  const header = rows[0].map((h) => h.trim());
+  const iName = header.findIndex((h) => /^name$/i.test(h));
+  const iKind = header.findIndex((h) => /^kind$/i.test(h));
+  const iColors = header.findIndex((h) => /^colors$/i.test(h));
+  if (iName === -1 || iKind === -1) {
+    throw new Error('CSV must include "Name" and "Kind" headers');
+  }
+
+  // Reset (mutate, don't reassign)
+  palettes.length = 0;
+
+  for (let r = 1; r < rows.length; r++) {
+    const cols = rows[r];
+    if (!cols || !cols.length) continue;
+
+    const name = (cols[iName] || "").trim();
+    const kind = (cols[iKind] || "").trim().toLowerCase();
+    const colorsCell = iColors >= 0 ? (cols[iColors] || "").trim() : "";
+
+    if (!name) continue;
+
+    if (kind === "separator") {
+      palettes.push({ name, separator: true });
+    } else if (kind === "custom") {
+      palettes.push({ name, custom: true });
+    } else {
+      const list = splitColors(colorsCell); // -> ['Red','White','Blue']
+      palettes.push({ name, colors: list });
+    }
+  }
+}
+
+// --- helpers 
+
+function splitColors(cell) {
+  if (!cell) return [];
+  // Prefer pipe-delimited; fall back to semicolon or comma if pipes not present
+  const delim = cell.includes("|") ? "|" : (cell.includes(";") ? ";" : ",");
+  return cell.split(delim).map(s => s.trim()).filter(Boolean);
+}
+
 
 // Create design selector dropdown
 const designSelect = document.getElementById('designSelect');
@@ -585,21 +555,7 @@ designSelect.addEventListener('change', () => {
 // document.querySelector('#studioControls').appendChild(designSelect);
 
 
-    const paletteSelect = document.getElementById('paletteSelect');
-
-    // Clear existing options and repopulate from the full list
-    paletteSelect.innerHTML = '';
-
-    palettes.forEach(palette => {
-      const option = document.createElement('option');
-      option.textContent = palette.name;
-      if (palette.separator) {
-        option.disabled = true;
-      } else {
-        option.value = palette.name;
-      }
-      paletteSelect.appendChild(option);
-    });
+    
 
     const selectors = [
       { select: document.getElementById('colorSelect1'), balloon: document.getElementById('balloon1'), overlay: document.querySelector('#balloonGroup1 image') },
@@ -608,13 +564,7 @@ designSelect.addEventListener('change', () => {
     ]; console.log("DEBUG: selectors =", selectors);
 
     selectors.forEach(({ select }) => {
-      const defaultOption = document.createElement('option');
-      defaultOption.value = '';
-      defaultOption.textContent = ' Choose...';
-      defaultOption.disabled = true;
-      defaultOption.selected = true;
-      select.appendChild(defaultOption);
-
+      
       colors.forEach(color => {
         const option = document.createElement('option');
         option.value = color.name;
@@ -757,18 +707,7 @@ undoBtn.addEventListener('click', () => {
   const event = new Event('change');
   designSelect.dispatchEvent(event);
 });
-//document.querySelector('#studioControls').appendChild(undoBtn);
 
-     /*selectors.forEach(({ select, balloon, overlay }) => {
-      select.addEventListener('change', () => {
-        const selectedName = select.value;
-        const colorObj = colors.find(c => c.name === selectedName);
-        if (colorObj) {
-          balloon.setAttribute('fill', colorObj.code);
-          overlay.setAttribute('href', selectedName.includes('Chrome') ? 'assets/sheenChr.png' : 'assets/sheenStd.png');
-        }
-      });
-    });  */
 
 document.querySelectorAll('.colorSelect').forEach((select, index) => {
   // console.log(`Binding select ${index} to balloonGroup${index + 1}`);
@@ -920,16 +859,7 @@ backdropSelect.addEventListener('change', () => {
       //shape.setAttribute('stroke-width', 2);
       svg.insertBefore(shape, svg.firstChild);
     }
-    /* const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('id', 'backdropShape');
-    rect.setAttribute('x', 120);
-    rect.setAttribute('y', 80);
-    rect.setAttribute('width', 360);
-    rect.setAttribute('height', 240);
-    rect.setAttribute('rx', 0);
-    rect.setAttribute('fill', getColorCodeByName(document.getElementById('color1').value));
     
-    svg.insertBefore(rect, svg.firstChild); */
   }
 });
 //document.querySelector('#studioControls').appendChild(backdropSelect);
@@ -1017,70 +947,6 @@ function updatePriceDisplay() {
 }
 
 document.getElementById('b2bToggle').addEventListener('change', updatePriceDisplay);
-
-// loadDesignMetadata('classicspiralarch.csv', allDesignMetadata)
-
-/* 
-// 1. Export SVG snapshot as PNG
-function svgToPng(svgEl) {
-  return new Promise((resolve) => {
-    const svgData = new XMLSerializer().serializeToString(svgEl);
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = svgEl.viewBox.baseVal.width || svgEl.clientWidth;
-      canvas.height = svgEl.viewBox.baseVal.height || svgEl.clientHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob(resolve);
-      URL.revokeObjectURL(url);
-    };
-    img.src = url;
-  });
-}
-
-// 2. Upload image to your server securely
-function uploadImage(blob, filename) {
-  const formData = new FormData();
-  formData.append('file', blob, filename);
-  return fetch('/upload.php', {
-    method: 'POST',
-    headers: {
-      'X-Upload-Token': 'MySecretKey123'
-    },
-    body: formData
-  }).then(res => res.json()).then(res => res.success ? res.url : null);
-}
-
-// 3. Button to export and checkout
-const checkoutBtn = document.getElementById('checkoutButton');
- */
-
-/* checkoutBtn.addEventListener('click', async () => {
-  const svgEl = document.querySelector('#balloonSVG');
-  if (!svgEl) return alert('Preview not found');
-
-  const blob = await svgToPng(svgEl);
-  const orderId = `design_${Date.now()}`;
-  const imageUrl = await uploadImage(blob, `${orderId}.png`);
-
-  const isB2B = document.getElementById('b2bPricing').checked;
-  const price = isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price;
-
-  if (!imageUrl) return alert('Image upload failed');
-
-  const squareLink = 'https://square.link/u/YOUR_CHECKOUT_ID'; // replace this!
-  const note = `Design Preview: ${imageUrl} Price: $${price}`;
-  const checkoutUrl = `${squareLink}?note=${encodeURIComponent(note)}`;
-  window.open(checkoutUrl, '_blank');
-}); */
-
-// This code assumes you're using a canvas with id="design-canvas"
-// and that you want to display a modal form to collect order info,
-// upload the preview image to Cloudinary, and then submit everything
-// via POST to a Google Form.
 
 // Cloudinary setup: Replace with your own credentials
 const CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1/dx6ul77rd/image/upload";
@@ -1417,40 +1283,56 @@ async function loadDesignsMetadataIntoGlobal(csvUrl) {
 });
 }
 
-/* window.addEventListener('DOMContentLoaded', () => {
-  loadDesignsMetadataIntoGlobal("assets/designs_metadata.csv").then(() => {
-    console.log(allDesignMetadata); // now populated
-  });
-
-  paletteSelect.value = 'Custom Colors...';
-  const initialDesign = getQueryParam("design") || "stringofpearls";
-  renderDesignFromCSV(`assets/designs/${initialDesign}.csv`);
-  const designSelect = document.getElementById("designSelect");
-  if (designSelect && initialDesign) {
-    console.log("Trying to set designSelect.value to:", initialDesign + ".csv");
-    designSelect.value = initialDesign + ".csv"; // THIS LINE HAS NO EFFECT
-
-    console.log("Iniital value was ", initialDesign);
-    console.log("Design select initialized with value:", designSelect.value);
-  } else if (designSelect) {
-    designSelect.value = "stringofpearls.csv";
-    console.log("No design supplied on query string, using defaujlt design: stringofpearls.csv");
-  } else {
-    console.warn("designSelect not found, using default design");
-    designSelect.value = "stringofpearls.csv";
-  }
-
-  console.log("Gonna invoke loadDesignMetadata with designSelect.value:", designSelect.value);
-  loadDesignMetadata(designSelect.value, allDesignMetadata);
-  console.log("Price: ", allDesignMetadata[designSelect.value]?.base_price);
-  updatePriceDisplay();
-});
-
- */
 
 window.addEventListener('DOMContentLoaded', async () => {
-  // 1) Load metadata first
+  // 1) Load metadata and colors dict first
   await loadDesignsMetadataIntoGlobal("assets/designs_metadata.csv");
+  await loadColorsIntoGlobal("assets/colors.csv");
+  await loadPalettesIntoGlobal('assets/palettes.csv');
+
+ // 1a) Populate the color selectors
+ const selectors = [
+      { select: document.getElementById('colorSelect1'), balloon: document.getElementById('balloon1'), overlay: document.querySelector('#balloonGroup1 image') },
+      { select: document.getElementById('colorSelect2'), balloon: document.getElementById('balloon2'), overlay: document.querySelector('#balloonGroup2 image') },
+      { select: document.getElementById('colorSelect3'), balloon: document.getElementById('balloon3'), overlay: document.querySelector('#balloonGroup3 image') }
+    ]; console.log("DEBUG: selectors =", selectors);
+
+    selectors.forEach(({ select }) => {
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = ' Choose...';
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      select.appendChild(defaultOption);
+
+      colors.forEach(color => {
+        const option = document.createElement('option');
+        option.value = color.name;
+        option.textContent = color.name;
+        option.style.backgroundColor = color.code;
+        option.style.color = (color.code === '#000000' ? '#FFFFFF' : '#000000'); // Adjust text color for contrast
+        select.appendChild(option);
+      });
+
+      select.disabled = false;
+    });
+
+    // 1b) Populate the palette selector
+    const paletteSelect = document.getElementById('paletteSelect');
+
+    // Clear existing options and repopulate from the full list
+    paletteSelect.innerHTML = '';
+
+    palettes.forEach(palette => {
+      const option = document.createElement('option');
+      option.textContent = palette.name;
+      if (palette.separator) {
+        option.disabled = true;
+      } else {
+        option.value = palette.name;
+      }
+      paletteSelect.appendChild(option);
+    });
 
   // 2) Grab the select
   const designSelect = document.getElementById("designSelect");
