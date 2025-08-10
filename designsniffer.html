@@ -83,6 +83,13 @@
 </svg>
 
 <script>
+  window.addEventListener('beforeunload', function (event) {
+    event.preventDefault();
+    event.returnValue = ''; // Required for Chrome
+  });
+</script>
+
+<script>
   const svg = document.getElementById('coordMap');
   const preview = document.getElementById('previewMap');
   const label = document.getElementById('coords');

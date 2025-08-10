@@ -15,4 +15,5 @@ group_id,cx,cy,radius,z_index,shape,rotation
 3,217,351,4.6875,31,circleShape,0
 3,212,356,4.6875,33,circleShape,0
 3,211,347,4.6875,35,circleShape,0
-1,193,259,60,1,image(assets/foil1.png),0
+1,193,259,60,1,image(assets/foil3.png),0
+1,550,250,45,1,image(assets/digits.png),0

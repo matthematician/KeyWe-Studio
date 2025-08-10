@@ -726,29 +726,29 @@ document.querySelectorAll('.colorSelect').forEach((select, index) => {
     group.querySelectorAll('circle').forEach(circle => {
       circle.setAttribute('fill', colorCode);
       circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
-     circle.setAttribute('filter', 'url(#balloonShadow)');
+      circle.setAttribute('filter', 'url(#balloonShadow)');
     });
 
     group.querySelectorAll('use').forEach(s => {
       s.setAttribute('fill', colorCode);
       s.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
-     s.setAttribute('filter', 'url(#balloonShadow)');
+      s.setAttribute('filter', 'url(#balloonShadow)');
     });
 
     group.querySelectorAll('image').forEach(el => {
-
-    let newHref = el.href.baseVal;
-                //console.log('newHref:', newHref);
-                //console.log('colorName:', colorName);
-            if(colorName.includes('Chrome')){
-                newHref = newHref.replace(/heenStd/, 'heenChr');
-            }else{
-                newHref = newHref.replace(/heenChr/, 'heenStd');
-              }
-                //console.log('Changed newHref to:', newHref);
-              el.setAttribute('href', newHref);
-
+      let newHref = el.href.baseVal;
+      //console.log('newHref:', newHref);
+      //console.log('colorName:', colorName);
+      if (colorName.includes('Chrome')) {
+        newHref = newHref.replace(/heenStd/, 'heenChr');
+      } else {
+        newHref = newHref.replace(/heenChr/, 'heenStd');
+      }
+      //console.log('Changed newHref to:', newHref);
+      el.setAttribute('href', newHref);
     });
+
+    updateCustomColor();
   });
 });
 
@@ -1009,7 +1009,7 @@ function createSplashForm() {
           </div><br>
           <label>Special Requests/Instructions:<br><textarea rows="4" cols="40" id="special-requests" placeholder="Any special requests or instructions for your order? We will try to accommodate them!"></textarea></label><br>
           <label>Your Price: ${price ? `<strong>$${price}</strong>` : '???'}</label><br>
-          <label><p>Click <strong>Submit Order</strong> to confirm your order. You will receive a confirmation email with details, and we'll send an invoice with payment information to confirm your design.</p></label><br>
+          <label><p>Click <strong>Submit Order</strong> to confirm your order. You will receive a confirmation email with details, and we'll send an invoice with payment information to confirm your design. A 20% deposit is requested for orders over $200.</p></label><br>
           <div style="display: flex; justify-content: space-between;">
             <button type="submit" style="width:75%;">Submit Order</button>&nbsp;
             <button type="button" id="back-button" style="width:20%;">Cancel</button>
