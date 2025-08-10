@@ -1,5 +1,7 @@
 //import html2canvas from "html2canvas";
 
+const vinylUpcharge = 20; // Custom design upcharge
+
 async function capturePreviewAsBlob(divElement, callback) {
   await new Promise((resolve) => requestAnimationFrame(resolve));
   setTimeout(() => {
@@ -137,7 +139,7 @@ function getQueryParam(param) {
 
 
 // Sample design metadata JSON
-const allDesignMetadata = {
+/* const allDesignMetadata = {
   "numberstack1.csv": {
     base_price: 60,
     subscription_price: 40,
@@ -210,7 +212,7 @@ const allDesignMetadata = {
     accent_coords: [400, 300],
     backdrops_compatible: [1, 3]
   },
-};
+}; */
 
     function renderDesignFromCSV(url) {
       const designName = url.split('/').pop();
@@ -386,7 +388,7 @@ const pricingToggle = document.getElementById('b2bToggle');
 checkbox.addEventListener("change", function () {
   const design = document.getElementById('custom-vinyl')
   updateCustomColor();
-
+  updatePriceDisplay();
 });
 
 
@@ -456,12 +458,7 @@ document.getElementById('delivery').addEventListener('change', updatePriceDispla
 // Create design selector dropdown
 const designSelect = document.getElementById('designSelect');
 // designSelect.id = 'designSelect';
-Object.entries(allDesignMetadata).forEach(([filename, data]) => {
-  const option = document.createElement('option');
-  option.value = filename;
-  option.textContent = data.label || filename;
-  designSelect.appendChild(option);
-});
+
 
 designSelect.addEventListener('change', () => {
   const selectedFile = designSelect.value;
@@ -979,6 +976,9 @@ function loadDesignMetadata(filename, metadata) {
 
 function updatePriceDisplay() {
 
+  const customDesignToggle = document.getElementById('custom-design-toggle');
+  const isCustomDesign = customDesignToggle.checked;
+
   const deliverySelect = document.getElementById('delivery');
   //console.log("DEBUG: deliverySelect =", deliverySelect);
   //console.log("DEBUG: deliveryDict =", deliveryDict);
@@ -990,7 +990,7 @@ function updatePriceDisplay() {
         delivCharge = 0;
         const isB2B = document.getElementById('b2bToggle').checked;
 
-        var price = (isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price);
+       var price = (isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price) + (isCustomDesign ? vinylUpcharge : 0);
         //console.log("DEBUG: price =", price, " and delivery charge is ", delivCharge);
 
        //if (typeof price !== 'number'){ console.log("Price was "+price); price = 0;}
@@ -1002,7 +1002,7 @@ function updatePriceDisplay() {
         delivCharge = dict[deliverySelect.value].delivery;
         const isB2B = document.getElementById('b2bToggle').checked;
        //console.log("DEBUG: isB2B =", isB2B);
-       var price = (isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price);
+       var price = (isB2B ? currentDesignMeta.subscription_price : currentDesignMeta.base_price) + (isCustomDesign ? vinylUpcharge : 0);
        //console.log("DEBUG: price =", price, " and delivery charge is ", delivCharge);
 
        //if (typeof price !== 'number'){ console.log("Price was "+price); price = 0;}
@@ -1375,17 +1375,118 @@ function populateDeliveryDropdown(deliveryDict) {
 }
 
 
+// Define global const once
+const allDesignMetadata = {};  // stays the same reference forever
 
-    window.addEventListener('DOMContentLoaded', () => {
-      paletteSelect.value = 'Custom Colors...';
-       const initialDesign = getQueryParam("design") || "stringofpearls";
-       renderDesignFromCSV(`assets/designs/${initialDesign}.csv`);
-       const designSelect = document.getElementById("designSelect");
-       if (designSelect && initialDesign) {
-        designSelect.value = initialDesign+".csv";
-        }
-        loadDesignMetadata(designSelect.value, allDesignMetadata);
+async function loadDesignsMetadataIntoGlobal(csvUrl) {
+  const response = await fetch(csvUrl);
+  const csvText = await response.text();
 
-       
-    });
+  const lines = csvText.trim().split("\n");
+  const headers = lines[0].split(",").map(h => h.trim());
 
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",").map(c => c.trim());
+    const entry = {};
+
+    for (let j = 0; j < headers.length; j++) {
+      const header = headers[j];
+      let value = cols[j];
+
+      if (["base_price", "subscription_price"].includes(header)) {
+        value = parseFloat(value);
+      } else if (header === "customizable") {
+        value = value.toLowerCase() === "true";
+      }
+      entry[header] = value;
+    }
+
+    // Mutate the global const object
+    allDesignMetadata[entry.filename] = {
+      base_price: entry.base_price,
+      subscription_price: entry.subscription_price,
+      label: entry.label,
+      customizable: entry.customizable
+    };
+  }
+  Object.entries(allDesignMetadata).forEach(([filename, data]) => {
+  const option = document.createElement('option');
+  option.value = filename;
+  option.textContent = data.label || filename;
+  designSelect.appendChild(option);
+});
+}
+
+/* window.addEventListener('DOMContentLoaded', () => {
+  loadDesignsMetadataIntoGlobal("assets/designs_metadata.csv").then(() => {
+    console.log(allDesignMetadata); // now populated
+  });
+
+  paletteSelect.value = 'Custom Colors...';
+  const initialDesign = getQueryParam("design") || "stringofpearls";
+  renderDesignFromCSV(`assets/designs/${initialDesign}.csv`);
+  const designSelect = document.getElementById("designSelect");
+  if (designSelect && initialDesign) {
+    console.log("Trying to set designSelect.value to:", initialDesign + ".csv");
+    designSelect.value = initialDesign + ".csv"; // THIS LINE HAS NO EFFECT
+
+    console.log("Iniital value was ", initialDesign);
+    console.log("Design select initialized with value:", designSelect.value);
+  } else if (designSelect) {
+    designSelect.value = "stringofpearls.csv";
+    console.log("No design supplied on query string, using defaujlt design: stringofpearls.csv");
+  } else {
+    console.warn("designSelect not found, using default design");
+    designSelect.value = "stringofpearls.csv";
+  }
+
+  console.log("Gonna invoke loadDesignMetadata with designSelect.value:", designSelect.value);
+  loadDesignMetadata(designSelect.value, allDesignMetadata);
+  console.log("Price: ", allDesignMetadata[designSelect.value]?.base_price);
+  updatePriceDisplay();
+});
+
+ */
+
+window.addEventListener('DOMContentLoaded', async () => {
+  // 1) Load metadata first
+  await loadDesignsMetadataIntoGlobal("assets/designs_metadata.csv");
+
+  // 2) Grab the select
+  const designSelect = document.getElementById("designSelect");
+  if (!designSelect) {
+    console.warn("designSelect not found, using default");
+    return;
+  }
+
+  // 3) (Re)build options from the freshly loaded metadata
+  designSelect.innerHTML = "";
+  const filenames = Object.keys(allDesignMetadata).sort();
+  for (const fn of filenames) {
+    const opt = document.createElement("option");
+    opt.value = fn;
+    opt.textContent = allDesignMetadata[fn]?.label || fn;
+    designSelect.appendChild(opt);
+  }
+
+  // 4) Decide initial selection
+  const initialDesignBase = getQueryParam("design") || "stringofpearls";
+  const initialDesignFile = `${initialDesignBase}.csv`;
+
+  // Set the select's value (now that options exist)
+  if ([...designSelect.options].some(o => o.value === initialDesignFile)) {
+    designSelect.value = initialDesignFile;      // <-- use .value, not .selected
+  } else {
+    // fallback if not present
+    designSelect.value = filenames[0] || initialDesignFile;
+  }
+
+  console.log("Design select initialized with value:", designSelect.value);
+
+  // 5) Proceed with rendering now that selection is set
+  paletteSelect.value = 'Custom Colors...'; // assuming this exists
+  renderDesignFromCSV(`assets/designs/${designSelect.value}`);
+  loadDesignMetadata(designSelect.value, allDesignMetadata);
+  console.log("Price: ", allDesignMetadata[designSelect.value]?.base_price);
+  //updatePriceDisplay();
+});

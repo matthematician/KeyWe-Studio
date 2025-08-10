@@ -1,0 +1,8 @@
+filename,base_price,subscription_price,label,customizable
+freestand9.csv,100,80,Freestanding Garland 9ft,false
+roundbackdrop9.csv,120,90,Backdrop Arch and 9' Garland,true
+crazytower.csv,100,80,Crazy Tower,true
+numberstack1.csv,60,40,Number Stack (1 digit),false
+numberstack16.csv,80,70,Number Stack (2 digits),false
+stringofpearls.csv,60,50,String of Pearls Arch (Helium),false
+classicspiralarch.csv,175,150,Full Spiral Arch (Air-Filled),false
