@@ -142,7 +142,7 @@ const allDesignMetadata = {
     base_price: 60,
     subscription_price: 40,
     label: "Number Stack: 1",
-    featured: true,
+    customizable: false,
     accent_coords: [300, 240],
     backdrops_compatible: [1, 3]
   },
@@ -150,7 +150,7 @@ const allDesignMetadata = {
     base_price: 80,
     subscription_price: 70,
     label: "Number Stack: 16",
-    featured: true,
+    customizable: false,
     accent_coords: [300, 240],
     backdrops_compatible: [1, 3]
   },
@@ -158,7 +158,7 @@ const allDesignMetadata = {
     base_price: 120,
     subscription_price: 90,
     label: "Backdrop Arch & 9' Garland",
-    featured: true,
+    customizable: true,
     accent_coords: [300, 240],
     backdrops_compatible: [1, 3]
   },
@@ -166,6 +166,7 @@ const allDesignMetadata = {
     base_price: 120,
     subscription_price: 100,
     label: "Organic Garland 12ft",
+        customizable: false,
     accent_coords: [180, 120],
     backdrops_compatible: [2, 4, 5]
   },
@@ -173,6 +174,7 @@ const allDesignMetadata = {
     base_price: 100,
     subscription_price: 80,
     label: "Freestanding Garland 9ft",
+        customizable: false,
     accent_coords: [180, 120],
     backdrops_compatible: [2, 4, 5]
   },
@@ -180,6 +182,7 @@ const allDesignMetadata = {
     base_price: 100,
     subscription_price: 80,
     label: "Crazy Tower",
+        customizable: true,
     accent_coords: [180, 120],
     backdrops_compatible: [2, 4, 5]
   },
@@ -187,6 +190,7 @@ const allDesignMetadata = {
     base_price: 60,
     subscription_price: 50,
     label: "String of Pearls Arch (Helium)",
+        customizable: false,
     accent_coords: [180, 120],
     backdrops_compatible: [2, 4, 5]
   },
@@ -194,6 +198,7 @@ const allDesignMetadata = {
     base_price: 175,
     subscription_price: 150,
     label: "Full Spiral Arch (Air Filled)",
+        customizable: false,
     accent_coords: [180, 120],
     backdrops_compatible: [2, 4, 5]
   },
@@ -201,12 +206,24 @@ const allDesignMetadata = {
     base_price: 80,
     subscription_price: 60,
     label: "Rotation Test Design",
+        customizable: false,
     accent_coords: [400, 300],
     backdrops_compatible: [1, 3]
   },
 };
 
     function renderDesignFromCSV(url) {
+      const designName = url.split('/').pop();
+      if (allDesignMetadata[designName]?.customizable === false) {
+        document.getElementById('custom-design-toggle').style.disabled = 'true';
+        document.getElementById('custom-design-toggle').checked = false;
+        document.getElementById('custom-design-label').style.opacity = '0.3';
+        console.log(designName, ' is not customizable');
+      } else {
+        document.getElementById('custom-design-toggle').style.disabled = '';
+        document.getElementById('custom-design-label').style.opacity = '1.0';
+        console.log(designName, ' is customizable');
+      }
       Papa.parse(url, {
         download: true,
         header: true,
@@ -936,6 +953,18 @@ let currentDesignMeta = {};
 
 function loadDesignMetadata(filename, metadata) {
   currentDesignMeta = metadata[filename] || {};
+  const designName = filename;
+  if (!designName) { console.warn(`No metadata found for design ${filename}`); }
+      if (allDesignMetadata[designName]?.customizable === false) {
+        document.getElementById('custom-design-toggle').disabled = 'true';
+        document.getElementById('custom-design-toggle').checked = false;
+        document.getElementById('custom-design-label').style.opacity = '0.3';
+        console.log(designName, ' is not customizable');
+      } else {
+        document.getElementById('custom-design-toggle').disabled = '';
+        document.getElementById('custom-design-label').style.opacity = '1.0';
+        console.log(designName, ' is customizable');
+      }
    loadDeliveryChargesFromCSV('assets/deliverycharges2025.csv')
           .then(dict => {
             populateDeliveryDropdown(dict);
