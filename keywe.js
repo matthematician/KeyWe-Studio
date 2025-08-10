@@ -81,6 +81,18 @@ function isLightColor(hex) {
   return luminance > 0.5;
 }
 
+function updateCustomColor(){
+  const customBkgColor = selectors[0].select.value;
+  console.log('Custom background color:', customBkgColor, " which is ", (isLightColor(getColorCodeByName(customBkgColor)) ? "light" : "dark" ));
+  if(!document.getElementById('custom-vinyl')) { return; }
+  if (isLightColor(getColorCodeByName(customBkgColor))) {
+    document.getElementById('custom-vinyl').setAttribute('href', 'assets/custom-black.png');
+  } else {
+    document.getElementById('custom-vinyl').setAttribute('href', 'assets/custom-white.png');
+  }
+  document.getElementById('custom-vinyl').style.opacity = checkbox.checked ? '1' : '0';
+}
+
 
 const colors = [
       { name: 'Chrome Rose Gold', code: '#BA726D' },
@@ -268,8 +280,13 @@ const allDesignMetadata = {
               image.setAttribute('width', row.radius * 2);
               image.setAttribute('height', row.radius * 2);
               image.setAttribute('href', imageUrl);
+              if (imageUrl.includes('custom-')){
+                image.setAttribute('id','custom-vinyl');
+              }
               //image.setAttribute('class', 'balloon');
               group.appendChild(image);
+                        updateCustomColor();
+
             }else if (row.shape.startsWith("halfRound")) {
               // Render half round backdrop shape
               const theBalloon = document.createElementNS('http://www.w3.org/2000/svg', 'use');
@@ -283,15 +300,7 @@ const allDesignMetadata = {
             group.appendChild(theBalloon);
             }
           });
-          // Include the custom design image (hidden if appropriate)
-          const group = document.getElementById('balloonGroup1'); // Use the first group for custom design
-          const customImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-          customImg.setAttribute('href', isLightColor(getColorCodeByName(selectors[0].select.value)) ? 'assets/custom-black.png' : 'assets/custom-white.png');
-          customImg.setAttribute('z-index', '0');
-          customImg.setAttribute('id', 'custom-vinyl');
-          customImg.setAttribute('transform', `translate(150 150)`); // Adjust as needed
-          customImg.style.display = document.getElementById("custom-design-toggle").checked ? 'block' : 'none'; // Initially hidden
-          group.appendChild(customImg);
+          
         }
       });
     }
@@ -326,6 +335,7 @@ const allDesignMetadata = {
             } 
           });
         }
+        updateCustomColor();
       });
     }
 
@@ -358,8 +368,7 @@ const pricingToggle = document.getElementById('b2bToggle');
 // Add event listener to toggle custom design checkbox
 checkbox.addEventListener("change", function () {
   const design = document.getElementById('custom-vinyl')
-  design.setAttribute('href',isLightColor(getColorCodeByName(selectors[0].select.value)) ? 'assets/custom-black.png' : 'assets/custom-white.png');
-  design.style.display = this.checked ? 'block' : 'none';
+  updateCustomColor();
 
 });
 
@@ -522,8 +531,13 @@ designSelect.addEventListener('change', () => {
           image.setAttribute('width', radius * 2);
           image.setAttribute('height', radius * 2);
           image.setAttribute('href', imageUrl);
+          if (imageUrl.includes('custom-')){
+                image.setAttribute('id','custom-vinyl');
+              }
           //image.setAttribute('class', 'balloon');
           group.appendChild(image);
+                    updateCustomColor();
+
         }else if (shapeType === 'halfRound') {
       // Render helium balloon shape
           let heliumShape = document.createElementNS('http://www.w3.org/2000/svg', 'use');
@@ -539,15 +553,7 @@ designSelect.addEventListener('change', () => {
           group.appendChild(heliumShape);
         }
       });
-      // Include the custom design image (hidden if appropriate)
-      const group = document.getElementById('balloonGroup1'); // Use the first group for custom design
-          const customImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-          customImg.setAttribute('href', isLightColor(getColorCodeByName(selectors[0].select.value)) ? 'assets/custom-black.png' : 'assets/custom-white.png');
-          customImg.setAttribute('z-index', '0');
-                    customImg.setAttribute('id', 'custom-vinyl');
-          customImg.setAttribute('transform', `translate(150 150)`); // Adjust as needed
-          customImg.style.display = document.getElementById("custom-design-toggle").checked ? 'block' : 'none'; // Initially hidden
-          group.appendChild(customImg);
+      
     
     });
     // Rebind backdrop color update listeners on color dropdowns
@@ -703,8 +709,12 @@ shuffleBtn.addEventListener('click', () => {
           image.setAttribute('width', radius * 2);
           image.setAttribute('height', radius * 2);
           image.setAttribute('href', imageUrl);
+          if (imageUrl.includes('custom-')){
+                image.setAttribute('id','custom-vinyl');
+              }
           //image.setAttribute('class', 'balloon');
           group.appendChild(image);
+          updateCustomColor();
         }else if (shapeType.indexOf('halfRound')>=0) {
           const heliumShape = document.createElementNS('http://www.w3.org/2000/svg', 'use');
           heliumShape.setAttribute('href', '#halfRound');
@@ -719,17 +729,9 @@ shuffleBtn.addEventListener('click', () => {
           group.appendChild(heliumShape);
         }
           });
-          // Include the custom design image (hidden if appropriate)
-                const group = document.getElementById('balloonGroup1'); // Use the first group for custom design
-
-          const customImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-          customImg.setAttribute('href', isLightColor(getColorCodeByName(selectors[0].select.value)) ? 'assets/custom-black.png' : 'assets/custom-white.png');
-          customImg.setAttribute('z-index', '0');
-                    customImg.setAttribute('id', 'custom-vinyl');
-          customImg.setAttribute('transform', `translate(150 150)`); // Adjust as needed
-          customImg.style.display = document.getElementById("custom-design-toggle").checked ? 'block' : 'none'; // Initially hidden
-          group.appendChild(customImg);
+          
         });
+        updateCustomColor();
     });
 });
 //document.querySelector('#studioControls').appendChild(shuffleBtn);

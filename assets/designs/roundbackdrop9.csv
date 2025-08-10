@@ -90,3 +90,4 @@ group_id,cx,cy,radius,z_index,shape,rotation
 3,199,64,21.875,179,circleShape,0
 3,145,114,21.875,181,circleShape,0
 1,280,125,35,0,halfRound,0
+1,255,155,40,1,image(assets/custom-black.png),0
