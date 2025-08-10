@@ -257,6 +257,7 @@ function getQueryParam(param) {
               image.setAttribute('width', row.radius * 2);
               image.setAttribute('height', row.radius * 2);
               image.setAttribute('href', imageUrl);
+              image.setAttribute('z-index', row.z_index);
               if (imageUrl.includes('custom-')){
                 image.setAttribute('id','custom-vinyl');
               }
@@ -515,6 +516,7 @@ designSelect.addEventListener('change', () => {
           image.setAttribute('width', radius * 2);
           image.setAttribute('height', radius * 2);
           image.setAttribute('href', imageUrl);
+          image.setAttribute('z-index', z_index);
           if (imageUrl.includes('custom-')){
                 image.setAttribute('id','custom-vinyl');
               }
@@ -673,6 +675,7 @@ shuffleBtn.addEventListener('click', () => {
           image.setAttribute('width', radius * 2);
           image.setAttribute('height', radius * 2);
           image.setAttribute('href', imageUrl);
+          image.setAttribute('z-index', z_index);
           if (imageUrl.includes('custom-')){
                 image.setAttribute('id','custom-vinyl');
               }
@@ -1240,9 +1243,41 @@ function populateDeliveryDropdown(deliveryDict) {
   }
 }
 
+function populateDesignSelect(designSelect, entries /* array, in order */) {
+  designSelect.innerHTML = '';
+  let currentGroup = null;
+
+  console.log("MKAY, gonna populate design select with entries:", entries);
+
+
+  for (const k of Object.keys(entries)) {
+    const entry = entries[k];
+    console.log("DEBUG: Processing entry:", entry.filename, "with label:", entry.label);
+    if (k.startsWith("separator")) {
+      // start a new group
+      console.log("DEBUG: Adding separator for group:", entry.label);
+
+      currentGroup = document.createElement('optgroup');
+      currentGroup.label = entry.label || '──────────';
+      designSelect.appendChild(currentGroup);
+      continue;
+    }
+
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = entry.label || entry.filename;
+
+    (currentGroup || designSelect).appendChild(opt);
+  }
+
+  // ensure a real option is selected (not a group)
+  const firstEnabled = designSelect.querySelector('option');
+  if (firstEnabled) designSelect.value = firstEnabled.value;
+}
+
 
 // Define global const once
-const allDesignMetadata = {};  // stays the same reference forever
+const allDesignMetadata = [];  // stays the same reference forever
 
 async function loadDesignsMetadataIntoGlobal(csvUrl) {
   const response = await fetch(csvUrl);
@@ -1267,7 +1302,6 @@ async function loadDesignsMetadataIntoGlobal(csvUrl) {
       entry[header] = value;
     }
 
-    // Mutate the global const object
     allDesignMetadata[entry.filename] = {
       base_price: entry.base_price,
       subscription_price: entry.subscription_price,
@@ -1275,18 +1309,16 @@ async function loadDesignsMetadataIntoGlobal(csvUrl) {
       customizable: entry.customizable
     };
   }
-  Object.entries(allDesignMetadata).forEach(([filename, data]) => {
-  const option = document.createElement('option');
-  option.value = filename;
-  option.textContent = data.label || filename;
-  designSelect.appendChild(option);
-});
+
+ // Get the keys in insertion order (or sort if needed)
 }
 
 
 window.addEventListener('DOMContentLoaded', async () => {
   // 1) Load metadata and colors dict first
   await loadDesignsMetadataIntoGlobal("assets/designs_metadata.csv");
+  populateDesignSelect(document.getElementById("designSelect"), allDesignMetadata);
+
   await loadColorsIntoGlobal("assets/colors.csv");
   await loadPalettesIntoGlobal('assets/palettes.csv');
 
@@ -1342,14 +1374,16 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   // 3) (Re)build options from the freshly loaded metadata
-  designSelect.innerHTML = "";
-  const filenames = Object.keys(allDesignMetadata).sort();
+ /*  designSelect.innerHTML = "";
+  const filenames = Object.keys(allDesignMetadata);
   for (const fn of filenames) {
     const opt = document.createElement("option");
     opt.value = fn;
     opt.textContent = allDesignMetadata[fn]?.label || fn;
     designSelect.appendChild(opt);
-  }
+  } */
+   const filenames = Object.keys(allDesignMetadata);
+ populateDesignSelect(designSelect, allDesignMetadata);
 
   // 4) Decide initial selection
   const initialDesignBase = getQueryParam("design") || "stringofpearls";
