@@ -2,7 +2,7 @@
 
 const vinylUpcharge = 20; // Custom design upcharge
 
-async function capturePreviewAsBlob(divElement, callback) {
+/* async function capturePreviewAsBlob(divElement, callback) {
   await new Promise((resolve) => requestAnimationFrame(resolve));
   setTimeout(() => {
   html2canvas(divElement, {
@@ -15,7 +15,7 @@ async function capturePreviewAsBlob(divElement, callback) {
     }, "image/png");
   });
 }, 50); // slight delay to ensure all SVGs are rendered
-}
+} */
 
 async function loadDeliveryChargesFromCSV(csvUrl) {
   const response = await fetch(csvUrl);
@@ -175,12 +175,12 @@ function getQueryParam(param) {
     function renderDesignFromCSV(url) {
       const designName = url.split('/').pop();
       if (allDesignMetadata[designName]?.customizable === false) {
-        document.getElementById('custom-design-toggle').style.disabled = 'true';
+        document.getElementById('custom-design-toggle').disabled = 'true';
         document.getElementById('custom-design-toggle').checked = false;
         document.getElementById('custom-design-label').style.opacity = '0.3';
         console.log(designName, ' is not customizable');
       } else {
-        document.getElementById('custom-design-toggle').style.disabled = '';
+        document.getElementById('custom-design-toggle').disabled = 'false';
         document.getElementById('custom-design-label').style.opacity = '1.0';
         console.log(designName, ' is customizable');
       }
@@ -754,15 +754,7 @@ document.querySelectorAll('.colorSelect').forEach((select, index) => {
 
 
 
-    paletteSelect.addEventListener('change', () => {
-      const selectedPalette = palettes.find(p => p.name === paletteSelect.value);
-      if (selectedPalette && selectedPalette.colors) {
-        setPaletteByNames(selectedPalette.colors);
-        selectors.forEach(({ select }) => (select.disabled = true));
-      } else if (selectedPalette && selectedPalette.custom) {
-        selectors.forEach(({ select }) => (select.disabled = false));
-      }
-    });
+    
 
 // Update backdrop fill color when palette or colors change
 function updateBackdropColor() {
@@ -775,7 +767,7 @@ function updateBackdropColor() {
   backdrop.setAttribute('fill', primaryColor);
 }
 
-// Hook into color dropdowns
+/* // Hook into color dropdowns
 setTimeout(() => {
   document.querySelectorAll('.color-select').forEach(select => {
     select.addEventListener('change', updateBackdropColor);
@@ -799,7 +791,7 @@ setTimeout(() => {
   document.querySelectorAll('.palette-select').forEach(select => {
     select.addEventListener('change', updateBackdropColor);
   });
-}, 100);
+}, 100); */
 
 
 
@@ -991,6 +983,8 @@ function createSplashForm() {
       align-items: center;
       justify-content: center;
       z-index: 9999;
+      max-height: 90dvh;
+      overflow-y: auto;
     ">
       <div style="background: white; padding: 2rem; border-radius: 10px; max-width: 500px; width: 100%;">
         <h2>Submit Your Order</h2>
@@ -1002,7 +996,7 @@ function createSplashForm() {
           <label class="compact" id="address2-label">Delivery Address Line 2:<br><input type="text" id="address2-input" placeholder="Apartment, suite, etc."></label><br>
           <label class="compact" id="town-label">Town/City:<br><input type="text" style="disabled: true;" id="town-input" required disabled value="${deliverySelect.value}"></label><br>
           <label class="compact">Date for ${method}:<br><input type="date" id="date-input" required></label><br>
-          <label class="compact" id="pickup-location-label" style="display:none;">Pickup at:<br><a href="https://maps.app.goo.gl/jC4GJQyQXntMBhGu6" target-"_new">Keylium HQ</a><br>41 Janebar Circle<br>Plymouth, MA 02360</label><br>
+          <label class="compact" id="pickup-location-label" style="display:none;">Pickup at:<br><a href="https://maps.app.goo.gl/jC4GJQyQXntMBhGu6" target="_blank">Keylium HQ</a><br>41 Janebar Circle<br>Plymouth, MA 02360</label><br>
           <div>
             <strong>Design Preview:</strong><br>
             <img id="preview-img" style="width: 100%; max-height: 300px; object-fit: contain; margin-top: 10px;" />
@@ -1135,8 +1129,8 @@ function showOrderModal(designBlob) {
   body: imageFormData
 });
 
-const result = await uploadRes.json();
-console.log("Cloudinary response:", result);
+/* const result = await uploadRes.json();
+console.log("Cloudinary response:", result); */
   });
 }
 
@@ -1364,6 +1358,16 @@ window.addEventListener('DOMContentLoaded', async () => {
         option.value = palette.name;
       }
       paletteSelect.appendChild(option);
+    });
+
+    paletteSelect.addEventListener('change', () => {
+      const selectedPalette = palettes.find(p => p.name === paletteSelect.value);
+      if (selectedPalette && selectedPalette.colors) {
+        setPaletteByNames(selectedPalette.colors);
+        selectors.forEach(({ select }) => (select.disabled = true));
+      } else if (selectedPalette && selectedPalette.custom) {
+        selectors.forEach(({ select }) => (select.disabled = false));
+      }
     });
 
   // 2) Grab the select
