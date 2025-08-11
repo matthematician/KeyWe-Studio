@@ -1193,7 +1193,7 @@ function downloadBlobAsFile(blob, filename) {
 }
 
 const orderButton = document.getElementById("orderButton");
-orderButton.addEventListener("click", () => {
+orderButton.addEventListener("pointerup", () => {
 
   const previewDiv = document.getElementById("visualizerContainer");
   if (!previewDiv) {
