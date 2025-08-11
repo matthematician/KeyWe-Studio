@@ -1,8 +1,12 @@
-body, h1, h2, p {
+body{
   margin: 0;
   font-family: 'Londrina Solid', sans-serif;
   background: #f9f9fa;
   /*color: #333; */
+}
+
+h1,h2,p{
+  font-family: 'Londrina Solid', sans-serif;
 }
 
 .container {
