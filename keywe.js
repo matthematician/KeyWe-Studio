@@ -178,11 +178,11 @@ function getQueryParam(param) {
         document.getElementById('custom-design-toggle').disabled = 'true';
         document.getElementById('custom-design-toggle').checked = false;
         document.getElementById('custom-design-label').style.opacity = '0.3';
-        console.log(designName, ' is not customizable');
+        //console.log(designName, ' is not customizable');
       } else {
         document.getElementById('custom-design-toggle').disabled = 'false';
         document.getElementById('custom-design-label').style.opacity = '1.0';
-        console.log(designName, ' is customizable');
+        //console.log(designName, ' is customizable');
       }
       Papa.parse(url, {
         download: true,
@@ -508,7 +508,7 @@ designSelect.addEventListener('change', () => {
         group.appendChild(overlay);
         } else if (shapeType.startsWith("image(")) {
           // Render image balloon shape
-                    console.log('Adding image balloon of shape:', shapeType, 'with z-index:', z_index);
+                    //console.log('Adding image balloon of shape:', shapeType, 'with z-index:', z_index);
           const imageUrl = shapeType.slice(6, -1);
           let image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
           image.setAttribute('x', cx - radius);
@@ -563,7 +563,8 @@ designSelect.addEventListener('change', () => {
       { select: document.getElementById('colorSelect1'), balloon: document.getElementById('balloon1'), overlay: document.querySelector('#balloonGroup1 image') },
       { select: document.getElementById('colorSelect2'), balloon: document.getElementById('balloon2'), overlay: document.querySelector('#balloonGroup2 image') },
       { select: document.getElementById('colorSelect3'), balloon: document.getElementById('balloon3'), overlay: document.querySelector('#balloonGroup3 image') }
-    ]; console.log("DEBUG: selectors =", selectors);
+    ]; 
+    //console.log("DEBUG: selectors =", selectors);
 
     selectors.forEach(({ select }) => {
       
@@ -667,7 +668,7 @@ shuffleBtn.addEventListener('click', () => {
         group.appendChild(overlay);
         }else if (shapeType.startsWith("image(")) {
           // Render image balloon shape
-          console.log('Adding image balloon of shape:', shapeType, 'with z-index:', z_index);
+          //console.log('Adding image balloon of shape:', shapeType, 'with z-index:', z_index);
           const imageUrl = shapeType.slice(6, -1);
           let image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
           image.setAttribute('x', cx - radius);
@@ -881,21 +882,21 @@ function loadDesignMetadata(filename, metadata) {
         document.getElementById('custom-design-toggle').disabled = 'true';
         document.getElementById('custom-design-toggle').checked = false;
         document.getElementById('custom-design-label').style.opacity = '0.3';
-        console.log(designName, ' is not customizable');
+        //console.log(designName, ' is not customizable');
       } else {
         document.getElementById('custom-design-toggle').disabled = '';
         document.getElementById('custom-design-label').style.opacity = '1.0';
-        console.log(designName, ' is customizable');
+        //console.log(designName, ' is customizable');
       }
    loadDeliveryChargesFromCSV('assets/deliverycharges2025.csv')
           .then(dict => {
             populateDeliveryDropdown(dict);
             deliveryDict = dict;
-            console.log("DEBUG: Delivery charges loaded:", deliveryDict);
+            //console.log("DEBUG: Delivery charges loaded:", deliveryDict);
           });
 
   updatePriceDisplay();
-  console.log("DEBUG: currentDesignMeta =", currentDesignMeta);
+  //console.log("DEBUG: currentDesignMeta =", currentDesignMeta);
 
 }
 
@@ -1072,9 +1073,9 @@ function showOrderModal(designBlob) {
     imageFormData.append("file", designBlob);
     imageFormData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-    console.log("blob:", designBlob);
-    console.log("blob.type:", designBlob.type);
-    console.log("preset:", CLOUDINARY_UPLOAD_PRESET);
+    //console.log("blob:", designBlob);
+    //console.log("blob.type:", designBlob.type);
+    //console.log("preset:", CLOUDINARY_UPLOAD_PRESET);
 
     try {
       const uploadRes = await fetch(CLOUDINARY_UPLOAD_URL, {
@@ -1146,7 +1147,7 @@ function svgElementToBlob(svgElement, callback) {
     const canvas = document.createElement("canvas");
     canvas.width = image.width;
     canvas.height = image.height;
-    console.log("DEBUG: canvas size:", canvas.width, "x", canvas.height);
+    //console.log("DEBUG: canvas size:", canvas.width, "x", canvas.height);
     const ctx = canvas.getContext("2d");
     ctx.drawImage(image, 0, 0);
 
@@ -1202,14 +1203,14 @@ uses.forEach(function(el) {
   el.setAttribute('stop-color',el.getAttribute('fill'));
   el.setAttribute('background',el.getAttribute('fill'));
   //applyComputedStylesAsInline(el);
-  console.log("DEBUG: Applied styles to element:", el);
+  //console.log("DEBUG: Applied styles to element:", el);
 })
 
 htmlToImage
   .toBlob(previewDiv)
   .then(function (blob) {
     showOrderModal(blob);
-    console.log("DEBUG: Blob created:", blob);
+    // console.log("DEBUG: Blob created:", blob);
     // downloadBlobAsFile(blob, 'balloon_design_preview.png');
   });
 
@@ -1241,15 +1242,15 @@ function populateDesignSelect(designSelect, entries /* array, in order */) {
   designSelect.innerHTML = '';
   let currentGroup = null;
 
-  console.log("MKAY, gonna populate design select with entries:", entries);
+  //console.log("MKAY, gonna populate design select with entries:", entries);
 
 
   for (const k of Object.keys(entries)) {
     const entry = entries[k];
-    console.log("DEBUG: Processing entry:", entry.filename, "with label:", entry.label);
+    //console.log("DEBUG: Processing entry:", entry.filename, "with label:", entry.label);
     if (k.startsWith("separator")) {
       // start a new group
-      console.log("DEBUG: Adding separator for group:", entry.label);
+      //console.log("DEBUG: Adding separator for group:", entry.label);
 
       currentGroup = document.createElement('optgroup');
       currentGroup.label = entry.label || '──────────';
@@ -1321,7 +1322,8 @@ window.addEventListener('DOMContentLoaded', async () => {
       { select: document.getElementById('colorSelect1'), balloon: document.getElementById('balloon1'), overlay: document.querySelector('#balloonGroup1 image') },
       { select: document.getElementById('colorSelect2'), balloon: document.getElementById('balloon2'), overlay: document.querySelector('#balloonGroup2 image') },
       { select: document.getElementById('colorSelect3'), balloon: document.getElementById('balloon3'), overlay: document.querySelector('#balloonGroup3 image') }
-    ]; console.log("DEBUG: selectors =", selectors);
+    ]; 
+    // console.log("DEBUG: selectors =", selectors);
 
     selectors.forEach(({ select }) => {
       const defaultOption = document.createElement('option');
@@ -1401,12 +1403,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     designSelect.value = filenames[0] || initialDesignFile;
   }
 
-  console.log("Design select initialized with value:", designSelect.value);
+  //console.log("Design select initialized with value:", designSelect.value);
 
   // 5) Proceed with rendering now that selection is set
   paletteSelect.value = 'Custom Colors...'; // assuming this exists
   renderDesignFromCSV(`assets/designs/${designSelect.value}`);
   loadDesignMetadata(designSelect.value, allDesignMetadata);
-  console.log("Price: ", allDesignMetadata[designSelect.value]?.base_price);
+  //console.log("Price: ", allDesignMetadata[designSelect.value]?.base_price);
   //updatePriceDisplay();
 });
