@@ -107,6 +107,69 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.js" integrity="sha512-4W7+nCTcMQMFBnTRwvixN7il649NCqZiBfJ7WvzU7gxF12zOnaKwVYTSIzwrjy/cy+CPQxn2lAIVZIes+rPp2Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
+<!-- Include Eruda (skip if you already load it elsewhere) -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script> -->
+
+<script>
+(function () {
+  function ensureEruda(cb) {
+    if (window.eruda && eruda._isInit) return cb && cb();
+    function init() {
+      try {
+        if (!window.eruda || !eruda._isInit) eruda.init();
+        eruda.position('bottom');          // optional: 'top' or 'bottom'
+        eruda.show('console');             // open to console
+        cb && cb();
+      } catch (_) {}
+    }
+    if (window.eruda) init();
+    else {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/eruda';
+      s.onload = init;
+      document.head.appendChild(s);
+    }
+  }
+
+  // Cooldown so we don't spam-open
+  let lastOpen = 0;
+  const COOLDOWN_MS = 2000;
+  function openErudaOnce(reason) {
+    const now = Date.now();
+    if (now - lastOpen < COOLDOWN_MS) return;
+    lastOpen = now;
+    ensureEruda(() => {
+      try {
+        eruda.show('console');
+        if (reason) console.log('[Eruda auto-open]:', reason);
+      } catch (_) {}
+    });
+  }
+
+  // Auto-open on errors
+  window.addEventListener('error', (e) => {
+    // e.message and e.error?.stack are useful
+    openErudaOnce('window.error: ' + (e.message || 'unknown error'));
+  });
+
+  // Auto-open on unhandled promise rejections
+  window.addEventListener('unhandledrejection', (e) => {
+    // e.reason may be an Error or any value
+    openErudaOnce('unhandledrejection');
+  });
+
+  // (Optional) also open on first console.error
+  const origError = console.error;
+  console.error = function (...args) {
+    try { openErudaOnce('console.error'); } catch (_) {}
+    return origError.apply(this, args);
+  };
+
+  // (Optional) open Eruda once after page load if there were buffered errors
+  // setTimeout(() => openErudaOnce('post-load check'), 0);
+})();
+</script>
+
   
   <script type="module" src="./keywe.js"></script>
 
