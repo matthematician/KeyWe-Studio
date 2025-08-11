@@ -1,6 +1,7 @@
 body{
   margin: 0;
   font-family: 'Londrina Solid', sans-serif;
+  font-face: 'Londrina Solid', sans-serif;
   font-weight: 100;
   background: #f9f9fa;
   /*color: #333; */
@@ -8,6 +9,7 @@ body{
 
 h1,h2{
   font-family: 'Londrina Solid', sans-serif;
+  font-face: 'Londrina Solid', sans-serif;
   font-weight: 300;
 }
 
