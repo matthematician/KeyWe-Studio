@@ -1241,7 +1241,7 @@ function downloadBlobAsFile(blob, filename) {
 }
 
 const orderButton = document.getElementById("orderButton");
-orderButton.addEventListener("pointerup", () => {
+orderButton.addEventListener("click", () => {
 
   const previewDiv = document.getElementById("visualizerContainer");
   if (!previewDiv) {
