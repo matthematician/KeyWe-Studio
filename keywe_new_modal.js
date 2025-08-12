@@ -1274,7 +1274,7 @@ function withTimeout(promise, ms = 8000) {
 
 const orderButton = document.getElementById("orderButton");
 
-orderButton.addEventListener("click", () => {
+/* orderButton.addEventListener("click", () => {
   console.log("WHOA. You just clicked the order button and I heard it!");
   const previewDiv = document.getElementById("visualizerContainer");
   if (!previewDiv) {
@@ -1310,7 +1310,7 @@ withTimeout(
 });
 
 
-  });
+  }); */
   
 function populateDeliveryDropdown(deliveryDict) {
   const select = document.getElementById("delivery");
