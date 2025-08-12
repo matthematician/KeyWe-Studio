@@ -193,7 +193,39 @@ function normalizeHex(hex){let h=hex.replace(/^#/,'').toLowerCase();if(h.length=
 function isLightColor(hex){hex=hex.replace(/^#/,"");const r=parseInt(hex.substring(0,2),16),g=parseInt(hex.substring(2,4),16),b=parseInt(hex.substring(4,6),16);const rs=r/255,gs=g/255,bs=b/255;const toLinear=c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4);const luminance=0.2126*toLinear(rs)+0.7152*toLinear(gs)+0.0722*toLinear(bs);return luminance>0.5;}
 function getColorCodeByName(name){const match=colors.find(c=>c.name===name);return match?match.code:'#888888';}
 function getQueryParam(param){const urlParams=new URLSearchParams(window.location.search);return urlParams.get(param);}
-// Freeze absolutely-positioned <img> elements to pixel sizes for Safari snapshot
+async function snapshotViaBlobURL(node) {
+  // 1) Get SVG as a data URL from html-to-image
+  const svgDataUrl = await htmlToImage.toSvg(node, { cacheBust: true, preferCanvas: true });
+
+  // 2) Turn it into a Blob, then into an object URL (blob:)
+  const svgBlob = await fetch(svgDataUrl).then(r => r.blob());
+  const blobUrl = URL.createObjectURL(svgBlob);
+
+  // 3) Draw onto a canvas
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  const { width, height } = node.getBoundingClientRect();
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(width));
+  canvas.height = Math.max(1, Math.round(height));
+  const ctx = canvas.getContext('2d');
+
+  await new Promise((res, rej) => {
+    img.onload = res;
+    img.onerror = rej;
+    img.src = blobUrl;
+  });
+
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  URL.revokeObjectURL(blobUrl);
+
+  // 4) Return a Blob so the rest of your code stays the same
+  return new Promise(resolve => canvas.toBlob(resolve));
+}
+
+    
+    
+    // Freeze absolutely-positioned <img> elements to pixel sizes for Safari snapshot
 function freezeHtmlImgSizes(container, selectorList = []) {
   const imgs = selectorList.flatMap(sel => Array.from(container.querySelectorAll(sel)));
   if (!imgs.length) return () => {};
@@ -445,19 +477,10 @@ orderButton.addEventListener('click',()=>{
   // NEW: freeze pixel sizes of silhouette/branding/etc.
   const restoreHtmlImgs = freezeHtmlImgSizes(previewDiv, ['img']);
 
-  try {
-    const dataUrl = await htmlToImage.toPng(previewDiv, { cacheBust: true, preferCanvas: true });
-    const blob = await fetch(dataUrl).then(r => r.blob());
-    openOrderPanelWithPreview(blob);
-    window.__lastPreviewBlob = blob;
-  } catch (err) {
-    console.error(err);
-    setStatus('Could not generate preview image.');
-  } finally {
-    restoreHtmlImgs();
-    restoreSvgImages();
-    filtered.forEach((el, i) => { if (prevFilters[i]) el.setAttribute('filter', prevFilters[i]); });
-  }
+  snapshotViaBlobURL(previewDiv)
+  .then(blob => { openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob; })
+  .catch(err => { console.error(err); setStatus('Could not generate preview image.'); });
+
 })();
 
 
