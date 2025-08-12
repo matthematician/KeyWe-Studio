@@ -335,7 +335,12 @@ orderButton.addEventListener('click',()=>{
     el.setAttribute('stop-color',fill);
     el.setAttribute('background',fill);
   });
-  htmlToImage.toBlob(previewDiv).then(blob=>{openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob;}).catch(err=>{console.error(err); setStatus('Could not generate preview image.');});
+  // htmlToImage.toBlob(previewDiv).then(blob=>{openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob;}).catch(err=>{console.error(err); setStatus('Could not generate preview image.');});
+htmlToImage.toPng(previewDiv, { cacheBust: true, preferCanvas: true })
+  .then(dataUrl => fetch(dataUrl).then(r => r.blob()))
+  .then(blob => { openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob; })
+  .catch(err => { console.error(err); setStatus('Could not generate preview image.'); });
+
 });
 
 cancelBtn.addEventListener('click',()=>{orderPanel.classList.remove('active'); setStatus('');});
