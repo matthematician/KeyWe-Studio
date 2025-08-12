@@ -1285,10 +1285,17 @@ function bindOrderButton() {
           backgroundColor: '#fff'
         }),
         8000 // timeout in ms
-      );
+      ).then(blob => {
+  console.log("OKAY! I'm about to show the order modal with this blob:", blob);
+  showOrderModal(blob);
+})
+.catch(err => {
+  console.error('[toBlob failed]', err);
+  alert('Sorry—could not render the preview on this device. Check console.');
+});
 
-      console.log('Blob ready, showing modal...');
-      showOrderModal(blob);
+      //console.log('Blob ready, showing modal...');
+      //showOrderModal(blob);
     } catch (err) {
       console.error('Order click failed:', err);
     } finally {
