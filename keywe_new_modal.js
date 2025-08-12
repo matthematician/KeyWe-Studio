@@ -1268,6 +1268,7 @@ function bindOrderButton() {
 window.addEventListener('DOMContentLoaded', bindOrderButton);
 
 const orderButton = document.getElementById("orderButton");
+
 orderButton.addEventListener("click", () => {
   console.log("WHOA. You just clicked the order button and I heard it!");
   const previewDiv = document.getElementById("visualizerContainer");
@@ -1289,6 +1290,7 @@ uses.forEach(function(el) {
 htmlToImage
   .toBlob(previewDiv)
   .then(function (blob) {
+    console.log("OKAY! I'm about to show the order modal with this blob:", blob);
     showOrderModal(blob);
     // console.log("DEBUG: Blob created:", blob);
     // downloadBlobAsFile(blob, 'balloon_design_preview.png');
