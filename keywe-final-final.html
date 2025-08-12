@@ -246,19 +246,65 @@
   }
 
   // Fallback path: get SVG, convert to Blob URL, draw to canvas
-  async function rasterViaBlobURL(node){
-    const svgDataUrl = await htmlToImage.toSvg(node, { cacheBust:true, preferCanvas:true });
-    const svgBlob = await fetch(svgDataUrl).then(r=>r.blob());
-    const blobUrl = URL.createObjectURL(svgBlob);
-    const img = new Image(); img.crossOrigin='anonymous';
-    const { width, height } = node.getBoundingClientRect();
-    const canvas = document.createElement('canvas'); canvas.width=Math.max(1,Math.round(width)); canvas.height=Math.max(1,Math.round(height));
-    const ctx = canvas.getContext('2d');
-    await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; img.src=blobUrl; });
-    ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    URL.revokeObjectURL(blobUrl);
-    return new Promise(resolve => canvas.toBlob(resolve));
+  function dataUrlToBlobURL(dataUrl) {
+  const i = dataUrl.indexOf(',');
+  const header = dataUrl.slice(0, i);
+  const body = dataUrl.slice(i + 1);
+  const isBase64 = /;base64/i.test(header);
+
+  let bytes;
+  if (isBase64) {
+    const bin = atob(body);
+    bytes = new Uint8Array(bin.length);
+    for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
+  } else {
+    // percent-encoded SVG
+    const text = decodeURIComponent(body);
+    bytes = new TextEncoder().encode(text);
   }
+  const blob = new Blob([bytes], { type: 'image/svg+xml;charset=utf-8' });
+  return URL.createObjectURL(blob);
+}
+
+function computeScale(node, maxPixels = 5_000_000) { // ~5MP cap
+  const r = node.getBoundingClientRect();
+  const pixels = Math.max(1, Math.round(r.width)) * Math.max(1, Math.round(r.height));
+  return pixels > maxPixels ? Math.sqrt(maxPixels / pixels) : 1;
+}
+
+async function rasterViaBlobURL(node) {
+  // Get SVG as a data URL
+  const svgDataUrl = await htmlToImage.toSvg(node, { cacheBust: true, preferCanvas: true });
+
+  // Turn it into a Blob URL WITHOUT fetch()
+  const blobUrl = dataUrlToBlobURL(svgDataUrl);
+
+  // Draw onto a (possibly downscaled) canvas
+  const img = new Image();
+  img.decoding = 'sync';
+  img.loading = 'eager';
+  img.crossOrigin = 'anonymous';
+
+  const r = node.getBoundingClientRect();
+  const scale = computeScale(node, /* adjust cap here if needed */ 5_000_000);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(r.width * scale));
+  canvas.height = Math.max(1, Math.round(r.height * scale));
+  const ctx = canvas.getContext('2d', { willReadFrequently: false });
+
+  await new Promise((res, rej) => {
+    img.onload = res;
+    img.onerror = rej;
+    img.src = blobUrl;
+  });
+
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  URL.revokeObjectURL(blobUrl);
+
+  return new Promise(resolve => canvas.toBlob(resolve));
+}
+
 
   // Orchestrated snapshot (handles Safari quirks)
   async function capturePreviewBlob(node){
