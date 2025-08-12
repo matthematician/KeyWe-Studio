@@ -1246,12 +1246,92 @@ function downloadBlobAsFile(blob, filename) {
     }, 0); // Use setTimeout to ensure the click event has time to register
   }
 }
+const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
 
 function withTimeout(promise, ms = 8000) {
   return Promise.race([
     promise,
     new Promise((_, rej) => setTimeout(() => rej(new Error(`html-to-image timeout after ${ms}ms`)), ms))
   ]);
+}
+
+async function inlineImagesToDataURLs(root) {
+  const imgs = [...root.querySelectorAll('img, image')];
+  await Promise.all(imgs.map(async el => {
+    const href = el.getAttribute('src') || el.getAttribute('href') || (el.href && el.href.baseVal);
+    if (!href || href.startsWith('data:')) return;
+    try {
+      const res = await fetch(href, { mode: 'cors', cache: 'force-cache' });
+      const blob = await res.blob();
+      const dataUrl = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
+      if (el.hasAttribute('src')) el.setAttribute('src', dataUrl);
+      if (el.hasAttribute('href')) el.setAttribute('href', dataUrl);
+    } catch (e) {
+      console.warn('inline image failed', href, e);
+    }
+  }));
+}
+
+function stripRiskyFilters(root) {
+  const changed = [];
+  root.querySelectorAll('[filter],[style*="filter"],[style*="backdrop-filter"]').forEach(el => {
+    const prevAttr = el.getAttribute('filter');
+    const prevStyle = el.getAttribute('style') || '';
+    if (prevAttr) el.removeAttribute('filter');
+    if (/filter:|backdrop-filter:/.test(prevStyle)) {
+      el.setAttribute('style', prevStyle.replace(/backdrop-filter:[^;]+;?/g,'').replace(/filter:[^;]+;?/g,''));
+    }
+    changed.push({ el, prevAttr, prevStyle });
+  });
+  return () => changed.forEach(({ el, prevAttr, prevStyle }) => {
+    if (prevAttr) el.setAttribute('filter', prevAttr);
+    if (prevStyle) el.setAttribute('style', prevStyle);
+  });
+}
+
+async function capturePreviewMobileSafe(node) {
+  // 1) Offscreen visible clone (works around display/stacking quirks)
+  const wrapper = document.createElement('div');
+  Object.assign(wrapper.style, {
+    position: 'fixed', left: '-99999px', top: '0',
+    display: 'block', visibility: 'visible', background: 'transparent'
+  });
+  const clone = node.cloneNode(true);
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
+
+  // 2) Prep the clone
+  await inlineImagesToDataURLs(wrapper);     // avoid CORS/taint
+  const restoreFilters = stripRiskyFilters(wrapper);
+  await new Promise(r => requestAnimationFrame(r));
+
+  // 3) Try html-to-image (skipFonts to avoid CSSOM)
+  const baseOpts = {
+    cacheBust: true,
+    backgroundColor: '#fff',
+    pixelRatio: isMobile ? 1 : 2,
+    skipFonts: true,                         // <- key for mobile CSS issues
+    filter: n => !(n.tagName === 'LINK' || n.tagName === 'SCRIPT') // ignore external links
+  };
+
+  try {
+    const blob = await withTimeout(htmlToImage.toBlob(clone, baseOpts), 8000);
+    return blob;
+  } catch (e1) {
+    console.warn('html-to-image failed, trying dom-to-image', e1);
+    try {
+      const dataUrl = await withTimeout(domtoimage.toPng(clone, baseOpts), 8000);
+      const res = await fetch(dataUrl);
+      return await res.blob();
+    } catch (e2) {
+      console.warn('dom-to-image failed, trying html2canvas', e2);
+      const canvas = await withTimeout(html2canvas(clone, { useCORS: true, allowTaint: false, backgroundColor: '#fff' }), 8000);
+      return await new Promise(r => canvas.toBlob(r, 'image/png'));
+    }
+  } finally {
+    restoreFilters();
+    wrapper.remove();
+  }
 }
 
 let orderBtnBound = false;   // prevents duplicate binding
@@ -1279,6 +1359,19 @@ function bindOrderButton() {
     orderInFlight = true;
 
     try {
+    const node = document.getElementById('visualizerContainer');
+    const blob = await capturePreviewMobileSafe(node);
+    console.log('Blob ready, showing modal...');
+    showOrderModal(blob);
+  } catch (err) {
+    console.error('Capture failed:', err);
+    alert('Sorry — could not render the preview on this device.');
+  } finally {
+    setTimeout(() => { orderInFlight = false; }, 500);
+  }
+}, { passive: false });
+
+/*     try {
       console.log('Order button tapped');
       const previewDiv = document.getElementById('visualizerContainer');
 
@@ -1313,17 +1406,17 @@ function bindOrderButton() {
         .catch(err => {
           console.error('[toBlob failed]', err);
           alert('Sorry—could not render the preview on this device. Check console.');
-        });
+        }); */
 
       //console.log('Blob ready, showing modal...');
       //showOrderModal(blob);
-    } catch (err) {
+/*     } catch (err) {
       console.error('Order click failed:', err);
     } finally {
       // small delay to avoid double-tap racing the synthetic click in older stacks
       setTimeout(() => { orderInFlight = false; }, 500);
     }
-  }, { passive: false });
+  }, { passive: false }); */
 }
 
 const orderButton = document.getElementById("orderButton");
