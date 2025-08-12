@@ -1252,7 +1252,7 @@ let orderInFlight = false;   // prevents double-submit on fast taps
 
 function bindOrderButton() {
   const btn = document.getElementById('orderButton');
-  if (!btn) return;
+  if (!btn) { console.warn("There was no button."); return; }
   if (orderBtnBound) return;           // already bound
   orderBtnBound = true;
 
