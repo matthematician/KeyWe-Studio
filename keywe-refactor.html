@@ -194,6 +194,56 @@ function isLightColor(hex){hex=hex.replace(/^#/,"");const r=parseInt(hex.substri
 function getColorCodeByName(name){const match=colors.find(c=>c.name===name);return match?match.code:'#888888';}
 function getQueryParam(param){const urlParams=new URLSearchParams(window.location.search);return urlParams.get(param);}
 
+// Convert a Blob to a data URL
+function blobToDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(blob);
+  });
+}
+
+// Fetch a URL and return a data URL (base64)
+async function urlToDataURL(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  const blob = await res.blob();
+  return blobToDataURL(blob);
+}
+
+// Temporarily inline all <image> hrefs inside an <svg>
+async function inlineSvgImages(svg) {
+  const imgs = Array.from(svg.querySelectorAll('image'));
+  if (!imgs.length) return () => {};
+
+  const originals = imgs.map(el =>
+    (el.getAttribute('href') ||
+     el.getAttributeNS('http://www.w3.org/1999/xlink', 'href') || '')
+  );
+
+  // Preload & inline each image as data URL
+  await Promise.all(imgs.map(async (el, i) => {
+    const src = normalizeUrl(originals[i]);
+    if (!src) return;
+    try {
+      const dataUrl = await urlToDataURL(src);
+      setSvgHref(el, dataUrl);
+    } catch (e) {
+      // As a safety, leave the original if fetch fails
+      setSvgHref(el, src);
+    }
+    // Helps Safari
+    el.setAttribute('crossorigin', 'anonymous');
+    el.setAttribute('crossOrigin', 'anonymous');
+  }));
+
+  // Return a restore function
+  return () => {
+    imgs.forEach((el, i) => setSvgHref(el, originals[i]));
+  };
+}
+
+    
 async function loadDeliveryChargesFromCSV(csvUrl){const res=await fetch(csvUrl);const t=await res.text();const lines=t.trim().split("\n");const headers=lines[0].split(",").map(h=>h.trim());const townIndex=headers.indexOf("Town"),zoneIndex=headers.indexOf("Zone"),deliveryIndex=headers.indexOf("Delivery");const dict={};for(let i=1;i<lines.length;i++){const cols=lines[i].split(",").map(c=>c.trim());const town=cols[townIndex];const zone=cols[zoneIndex];const delivery=parseFloat(cols[deliveryIndex]);dict[town]={zone,delivery};}return dict;}
 
 async function loadColorsIntoGlobal(csvUrl){const res=await fetch(csvUrl);const text=await res.text();const lines=text.trim().split("\n");const headers=lines[0].split(",").map(h=>h.trim());const nameIdx=headers.findIndex(h=>/^name$/i.test(h));const codeIdx=headers.findIndex(h=>/^(hex|code)$/i.test(h));colors.length=0;for(let i=1;i<lines.length;i++){const cols=lines[i].split(",").map(c=>c.trim());if(!cols[nameIdx]||!cols[codeIdx])continue;colors.push({name:cols[nameIdx],code:cols[codeIdx]});}}
@@ -337,26 +387,37 @@ orderButton.addEventListener('click',()=>{
   });
   // htmlToImage.toBlob(previewDiv).then(blob=>{openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob;}).catch(err=>{console.error(err); setStatus('Could not generate preview image.');});
   console.warn('OK, attempting the toPng call now...');
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-(function () {
+  
+  (async function () {
   const svg = document.getElementById('balloonSVG');
+
+  // 1) Temporarily remove filters (Safari can hang on feDropShadow)
   const filtered = Array.from(svg.querySelectorAll('[filter]'));
-  const prev = filtered.map(el => el.getAttribute('filter'));
+  const prevFilters = filtered.map(el => el.getAttribute('filter'));
   filtered.forEach(el => el.removeAttribute('filter'));
 
-  const snap = isSafari
-    ? html2canvas(previewDiv, { useCORS: true }).then(c => c.toDataURL())
-    : htmlToImage.toPng(previewDiv, { cacheBust: true, preferCanvas: true });
+  // 2) Inline all <image> assets as data URLs
+  const restoreImages = await inlineSvgImages(svg);
 
-  snap
-    .then(dataUrl => fetch(dataUrl).then(r => r.blob()))
-    .then(blob => { openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob; })
-    .catch(err => { console.error(err); setStatus('Could not generate preview image.'); })
-    .finally(() => {
-      filtered.forEach((el, i) => { if (prev[i]) el.setAttribute('filter', prev[i]); });
+  try {
+    // 3) Snapshot (toPng tends to be more reliable than toBlob in Safari)
+    const dataUrl = await htmlToImage.toPng(previewDiv, {
+      cacheBust: true,
+      preferCanvas: true
     });
+    const blob = await fetch(dataUrl).then(r => r.blob());
+    openOrderPanelWithPreview(blob);
+    window.__lastPreviewBlob = blob;
+  } catch (err) {
+    console.error(err);
+    setStatus('Could not generate preview image.');
+  } finally {
+    // 4) Restore images and filters
+    restoreImages();
+    filtered.forEach((el, i) => { if (prevFilters[i]) el.setAttribute('filter', prevFilters[i]); });
+  }
 })();
+
 
   
 
