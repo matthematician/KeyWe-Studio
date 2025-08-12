@@ -337,10 +337,25 @@ orderButton.addEventListener('click',()=>{
   });
   // htmlToImage.toBlob(previewDiv).then(blob=>{openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob;}).catch(err=>{console.error(err); setStatus('Could not generate preview image.');});
   console.warn('OK, attempting the toPng call now...');
+  (function () {
+  const svg = document.getElementById('balloonSVG');
+  const filtered = Array.from(svg.querySelectorAll('[filter]'));
+  const prev = filtered.map(el => el.getAttribute('filter'));
+
+  // 1) temporarily remove filters (Safari hangs on these)
+  filtered.forEach(el => el.removeAttribute('filter'));
+
+  // 2) take snapshot (toPng is often more reliable on Safari)
   htmlToImage.toPng(previewDiv, { cacheBust: true, preferCanvas: true })
-  .then(dataUrl => fetch(dataUrl).then(r => r.blob()))
-  .then(blob => { openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob; })
-  .catch(err => { console.error(err); setStatus('Could not generate preview image.'); });
+    .then(dataUrl => fetch(dataUrl).then(r => r.blob()))
+    .then(blob => { openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob; })
+    .catch(err => { console.error(err); setStatus('Could not generate preview image.'); })
+    .finally(() => {
+      // 3) restore filters
+      filtered.forEach((el, i) => { if (prev[i]) el.setAttribute('filter', prev[i]); });
+    });
+})();
+  
 
 });
 
