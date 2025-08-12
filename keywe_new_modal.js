@@ -1244,7 +1244,7 @@ function downloadBlobAsFile(blob, filename) {
 
 const orderButton = document.getElementById("orderButton");
 orderButton.addEventListener("click", () => {
-
+  console.log("WHOA. You just clicked the order button and I heard it!");
   const previewDiv = document.getElementById("visualizerContainer");
   if (!previewDiv) {
     console.error("Preview container not found");
