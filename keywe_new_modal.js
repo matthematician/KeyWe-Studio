@@ -1259,8 +1259,11 @@ let orderInFlight = false;   // prevents double-submit on fast taps
 
 function bindOrderButton() {
   const btn = document.getElementById('orderButton');
-  if (!btn) { console.warn("There was no button."); return; }
-  if (orderBtnBound) return;           // already bound
+  if (!btn) {
+    console.warn("There was no button.");
+    return;
+  }
+  if (orderBtnBound) return; // already bound
   orderBtnBound = true;
 
   // Prefer a single pointer event. Fallback to click if needed.
@@ -1278,8 +1281,23 @@ function bindOrderButton() {
     try {
       console.log('Order button tapped');
       const previewDiv = document.getElementById('visualizerContainer');
+
+      // verify previewDiv exists
+      if (!previewDiv) {
+        console.error('[capture] #visualizerContainer not found');
+
+        // Quick forensics:
+        console.log('[capture] ids present:', Array.from(document.querySelectorAll('[id]')).map(n => n.id));
+        console.log('[capture] has balloonSVG?', !!document.getElementById('balloonSVG'));
+        console.log('[capture] HTML snippet:', document.body.innerHTML.slice(0, 500)); // optional
+
+        alert('Preview area not found on this device.'); // temporary UX fallback
+        return;
+      }
+
       const r = previewDiv.getBoundingClientRect();
       console.log('[previewDiv size]', r.width, r.height);
+
       const blob = await withTimeout(
         htmlToImage.toBlob(previewDiv, {
           pixelRatio: 1,
@@ -1287,14 +1305,15 @@ function bindOrderButton() {
           backgroundColor: '#fff'
         }),
         8000 // timeout in ms
-      ).then(blob => {
-  console.log("OKAY! I'm about to show the order modal with this blob:", blob);
-  showOrderModal(blob);
-})
-.catch(err => {
-  console.error('[toBlob failed]', err);
-  alert('Sorry—could not render the preview on this device. Check console.');
-});
+      )
+        .then(blob => {
+          console.log("OKAY! I'm about to show the order modal with this blob:", blob);
+          showOrderModal(blob);
+        })
+        .catch(err => {
+          console.error('[toBlob failed]', err);
+          alert('Sorry—could not render the preview on this device. Check console.');
+        });
 
       //console.log('Blob ready, showing modal...');
       //showOrderModal(blob);
