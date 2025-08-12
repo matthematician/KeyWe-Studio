@@ -47,7 +47,9 @@ async function loadDeliveryChargesFromCSV(csvUrl) {
 
 function ensureModalRoot() {
   let root = document.getElementById('modal-root');
+  console.log("Gonna check for modal root:", root);
   if (!root) {
+    console.log("Creating modal root");
     root = document.createElement('div');
     root.id = 'modal-root';
     document.body.appendChild(root);
