@@ -18,4 +18,4 @@ group_id,cx,cy,radius,z_index,shape,rotation
 1,174,244,17.1875,37,circleShape,0
 1,157,266,17.1875,39,circleShape,0
 1,174,157,50,41,circleShape,0
-1,171,156,35,41,image('assets/custom-black.png'),0
+1,171,156,35,41,image(assets/custom-black.png),0
