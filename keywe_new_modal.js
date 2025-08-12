@@ -1278,6 +1278,8 @@ function bindOrderButton() {
     try {
       console.log('Order button tapped');
       const previewDiv = document.getElementById('visualizerContainer');
+      const r = previewDiv.getBoundingClientRect();
+      console.log('[previewDiv size]', r.width, r.height);
       const blob = await withTimeout(
         htmlToImage.toBlob(previewDiv, {
           pixelRatio: 1,
