@@ -1101,6 +1101,11 @@ function closeOrderModal() {
 }
 
 function showOrderModal(designBlob) {
+  console.log("DEBUG: showOrderModal called with designBlob:", designBlob);
+  if (!designBlob) {
+    console.error("No design blob provided to showOrderModal");
+    return;
+  }
   createSplashForm();
   const reader = new FileReader();
   reader.onloadend = () => {
