@@ -193,6 +193,41 @@ function normalizeHex(hex){let h=hex.replace(/^#/,'').toLowerCase();if(h.length=
 function isLightColor(hex){hex=hex.replace(/^#/,"");const r=parseInt(hex.substring(0,2),16),g=parseInt(hex.substring(2,4),16),b=parseInt(hex.substring(4,6),16);const rs=r/255,gs=g/255,bs=b/255;const toLinear=c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4);const luminance=0.2126*toLinear(rs)+0.7152*toLinear(gs)+0.0722*toLinear(bs);return luminance>0.5;}
 function getColorCodeByName(name){const match=colors.find(c=>c.name===name);return match?match.code:'#888888';}
 function getQueryParam(param){const urlParams=new URLSearchParams(window.location.search);return urlParams.get(param);}
+// Freeze absolutely-positioned <img> elements to pixel sizes for Safari snapshot
+function freezeHtmlImgSizes(container, selectorList = []) {
+  const imgs = selectorList.flatMap(sel => Array.from(container.querySelectorAll(sel)));
+  if (!imgs.length) return () => {};
+
+  const saved = imgs.map(img => ({
+    style: {
+      width: img.style.width,
+      height: img.style.height,
+      left: img.style.left,
+      top: img.style.top,
+    }
+  }));
+
+  imgs.forEach(img => {
+    const r = img.getBoundingClientRect();
+    img.style.width = `${Math.round(r.width)}px`;
+    img.style.height = `${Math.round(r.height)}px`;
+    // Optional: lock position if you set left/top dynamically
+    // img.style.left = `${Math.round(r.left)}px`;
+    // img.style.top  = `${Math.round(r.top)}px`;
+  });
+
+  // Restore function
+  return () => {
+    imgs.forEach((img, i) => {
+      img.style.width  = saved[i].style.width;
+      img.style.height = saved[i].style.height;
+      if (saved[i].style.left) img.style.left = saved[i].style.left;
+      if (saved[i].style.top)  img.style.top  = saved[i].style.top;
+    });
+  };
+}
+
+    
 function normalizeUrl(u) {
   return (u || '').trim().replace(/^['"]+|['"]+$/g, '');
 }
@@ -397,21 +432,21 @@ orderButton.addEventListener('click',()=>{
   
   (async function () {
   const svg = document.getElementById('balloonSVG');
+  const previewDiv = document.getElementById('visualizerContainer');
 
-  // 1) Temporarily remove filters (Safari can hang on feDropShadow)
+  // Remove SVG filters for Safari
   const filtered = Array.from(svg.querySelectorAll('[filter]'));
   const prevFilters = filtered.map(el => el.getAttribute('filter'));
   filtered.forEach(el => el.removeAttribute('filter'));
 
-  // 2) Inline all <image> assets as data URLs
-  const restoreImages = await inlineSvgImages(svg);
+  // Inline SVG <image> assets as before
+  const restoreSvgImages = await inlineSvgImages(svg);
+
+  // NEW: freeze pixel sizes of silhouette/branding/etc.
+  const restoreHtmlImgs = freezeHtmlImgSizes(previewDiv, ['img']);
 
   try {
-    // 3) Snapshot (toPng tends to be more reliable than toBlob in Safari)
-    const dataUrl = await htmlToImage.toPng(previewDiv, {
-      cacheBust: true,
-      preferCanvas: true
-    });
+    const dataUrl = await htmlToImage.toPng(previewDiv, { cacheBust: true, preferCanvas: true });
     const blob = await fetch(dataUrl).then(r => r.blob());
     openOrderPanelWithPreview(blob);
     window.__lastPreviewBlob = blob;
@@ -419,11 +454,12 @@ orderButton.addEventListener('click',()=>{
     console.error(err);
     setStatus('Could not generate preview image.');
   } finally {
-    // 4) Restore images and filters
-    restoreImages();
+    restoreHtmlImgs();
+    restoreSvgImages();
     filtered.forEach((el, i) => { if (prevFilters[i]) el.setAttribute('filter', prevFilters[i]); });
   }
 })();
+
 
 
   
