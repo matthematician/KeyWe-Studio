@@ -336,7 +336,8 @@ orderButton.addEventListener('click',()=>{
     el.setAttribute('background',fill);
   });
   // htmlToImage.toBlob(previewDiv).then(blob=>{openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob;}).catch(err=>{console.error(err); setStatus('Could not generate preview image.');});
-htmlToImage.toPng(previewDiv, { cacheBust: true, preferCanvas: true })
+  console.warn('OK, attempting the toPng call now...');
+  htmlToImage.toPng(previewDiv, { cacheBust: true, preferCanvas: true })
   .then(dataUrl => fetch(dataUrl).then(r => r.blob()))
   .then(blob => { openOrderPanelWithPreview(blob); window.__lastPreviewBlob = blob; })
   .catch(err => { console.error(err); setStatus('Could not generate preview image.'); });
