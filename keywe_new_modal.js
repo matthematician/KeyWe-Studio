@@ -1259,7 +1259,7 @@ function bindOrderButton() {
   };
 
   ['pointerup','click','touchend'].forEach(t =>
-    btn.addEventListener(t, handler, { passive: false })
+    btn.addEventListener(t, handler, { passive: true })
   );
   btn.style.touchAction = 'manipulation';
   console.log('orderButton bound');
