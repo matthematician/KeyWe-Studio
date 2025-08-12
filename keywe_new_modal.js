@@ -1247,35 +1247,41 @@ function downloadBlobAsFile(blob, filename) {
   }
 }
 
+let orderBtnBound = false;   // prevents duplicate binding
+let orderInFlight = false;   // prevents double-submit on fast taps
+
 function bindOrderButton() {
   const btn = document.getElementById('orderButton');
-  if (!btn) { console.warn('orderButton not found'); return; }
+  if (!btn) return;
+  if (orderBtnBound) return;           // already bound
+  orderBtnBound = true;
 
-  const handler = async (e) => {
+  // Prefer a single pointer event. Fallback to click if needed.
+  const evt = ('onpointerup' in window) ? 'pointerup' : 'click';
+  btn.style.touchAction = 'manipulation'; // kills the 300ms delay on modern browsers
+
+  btn.addEventListener(evt, async (e) => {
+    // not passive: we may call preventDefault
+    e.preventDefault();
+
+    // guard: ignore if already handling a tap
+    if (orderInFlight) return;
+    orderInFlight = true;
+
     try {
-      console.log('Order button clicked and amazingly I recognized it!');
-      e.preventDefault();
-      // your existing capture + modal code:
+      console.log('Order button tapped');
       const previewDiv = document.getElementById('visualizerContainer');
-      const blob = await htmlToImage.toBlob(previewDiv, { pixelRatio: 1, cacheBust: true, backgroundColor: '#fff' });
+      const blob = await htmlToImage.toBlob(previewDiv, {
+        pixelRatio: 1, cacheBust: true, backgroundColor: '#fff'
+      });
       showOrderModal(blob);
     } catch (err) {
       console.error('Order click failed:', err);
+    } finally {
+      // small delay to avoid double-tap racing the synthetic click in older stacks
+      setTimeout(() => { orderInFlight = false; }, 500);
     }
-  };
-
-  ['pointerup','click','touchend'].forEach(t =>
-    btn.addEventListener(t, handler, { passive: true })
-  );
-  btn.style.touchAction = 'manipulation';
-  console.log('orderButton bound');
-}
-
-function withTimeout(promise, ms = 8000) {
-  return Promise.race([
-    promise,
-    new Promise((_, rej) => setTimeout(() => rej(new Error(`html-to-image timeout after ${ms}ms`)), ms))
-  ]);
+  }, { passive: false });
 }
 
 const orderButton = document.getElementById("orderButton");
