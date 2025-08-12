@@ -1253,6 +1253,7 @@ function bindOrderButton() {
 
   const handler = async (e) => {
     try {
+      console.log('Order button clicked and amazingly I recognized it!');
       e.preventDefault();
       // your existing capture + modal code:
       const previewDiv = document.getElementById('visualizerContainer');
