@@ -1247,6 +1247,13 @@ function downloadBlobAsFile(blob, filename) {
   }
 }
 
+function withTimeout(promise, ms = 8000) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(`html-to-image timeout after ${ms}ms`)), ms))
+  ]);
+}
+
 let orderBtnBound = false;   // prevents duplicate binding
 let orderInFlight = false;   // prevents double-submit on fast taps
 
