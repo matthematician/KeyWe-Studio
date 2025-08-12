@@ -504,7 +504,12 @@ async function rasterViaBlobURL(node) {
   }
   checkbox.addEventListener('change',()=>{updateCustomColor();updatePriceDisplay();});
 
-  // silhouette + branding
+  // background + silhouette + branding
+  const eventhall = document.createElement('img');
+    eventhall.src='assets/eventhall.jpg'; eventhall.alt='Background';
+    Object.assign(eventhall.style,{position:'absolute', bottom:'0px', left:'0px', height:'100%', zIndex:'0'});
+    document.querySelector('#visualizerContainer').appendChild(eventhall);
+    
   const silhouette=document.createElement('img');
   silhouette.src='assets/silhouette.png'; silhouette.alt='Scale Silhouette';
   Object.assign(silhouette.style,{position:'absolute', bottom:'20px', left:'20px', height:'50%', zIndex:'0'});
