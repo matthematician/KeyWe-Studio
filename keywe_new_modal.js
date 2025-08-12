@@ -104,13 +104,13 @@ function isLightColor(hex) {
   // Compute relative luminance
   const luminance = 0.2126 * rLin + 0.7152 * gLin + 0.0722 * bLin;
 
-  console.log(`Luminance: ${luminance} for RGB(${r}, ${g}, ${b})`);
+  //console.log(`Luminance: ${luminance} for RGB(${r}, ${g}, ${b})`);
   return luminance > 0.5;
 }
 
 function updateCustomColor(){
   const customBkgColor = selectors[0].select.value;
-  console.log('Custom background color:', customBkgColor, " which is ", (isLightColor(getColorCodeByName(customBkgColor)) ? "light" : "dark" ));
+  //console.log('Custom background color:', customBkgColor, " which is ", (isLightColor(getColorCodeByName(customBkgColor)) ? "light" : "dark" ));
   if(!document.getElementById('custom-vinyl')) { return; }
   if (isLightColor(getColorCodeByName(customBkgColor))) {
     document.getElementById('custom-vinyl').setAttribute('href', 'assets/custom-black.png');
