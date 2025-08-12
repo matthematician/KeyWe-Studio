@@ -228,7 +228,7 @@ function getQueryParam(param) {
             const groupIndex = row.group_id - 1;
             const colorName = selectors[groupIndex]?.select.value;
             const colorCode = getColorCodeByName(colorName);
-        
+
             //console.log('Adding row:', row);
             //console.log('Adding balloon of shape:', row.shape, 'with z-index:', row.z_index);
             if (row.shape === 'circleShape' || !(row.shape)) {
@@ -305,7 +305,7 @@ function getQueryParam(param) {
             group.appendChild(theBalloon);
             }
           });
-          
+
         }
       });
     }
@@ -472,7 +472,7 @@ designSelect.addEventListener('change', () => {
         document.getElementById('balloonGroup2'),
         document.getElementById('balloonGroup3')
       ];
-      
+
       groups.forEach(group => group.innerHTML = '');
       let counter = 0;
       rows.forEach(row => {
@@ -509,7 +509,7 @@ designSelect.addEventListener('change', () => {
         overlay.setAttribute('class', 'balloon');
         overlay.setAttribute('opacity', '0.5');
         group.appendChild(overlay);
-      
+
     } else if (shapeType === 'heliumShape') {
       // Render helium balloon shape
           let heliumShape = document.createElementNS('http://www.w3.org/2000/svg', 'use');
@@ -518,7 +518,7 @@ designSelect.addEventListener('change', () => {
           heliumShape.setAttribute('transform', `rotate(${rotation} ${cx} ${cy}) translate(${cx - radius} ${cy - radius}) scale(${radius / 17.75})`);
           heliumShape.setAttribute('z-index', z_index);
           heliumShape.setAttribute('fill', colorCode);
-          
+
 
           group.appendChild(heliumShape);
         //console.log('Adding balloon of shape:', shapeType, 'with z-index:', z_index);
@@ -561,13 +561,13 @@ designSelect.addEventListener('change', () => {
           heliumShape.setAttribute('fill', colorCode);
           heliumShape.setAttribute('filter', 'brightness(0.9)');
 
-          
+
 
           group.appendChild(heliumShape);
         }
       });
-      
-    
+
+
     });
     // Rebind backdrop color update listeners on color dropdowns
     document.querySelectorAll('.colorSelect').forEach(select => {
@@ -584,7 +584,7 @@ designSelect.addEventListener('change', () => {
 // document.querySelector('#studioControls').appendChild(designSelect);
 
 
-    
+
 
     const selectors = [
       { select: document.getElementById('colorSelect1'), balloon: document.getElementById('balloon1'), overlay: document.querySelector('#balloonGroup1 image') },
@@ -594,7 +594,7 @@ designSelect.addEventListener('change', () => {
     //console.log("DEBUG: selectors =", selectors);
 
     selectors.forEach(({ select }) => {
-      
+
       colors.forEach(color => {
         const option = document.createElement('option');
         option.value = color.name;
@@ -669,7 +669,7 @@ shuffleBtn.addEventListener('click', () => {
         overlay.setAttribute('z-index', 1 + parseInt(z_index));
         overlay.setAttribute('opacity', '0.5'); 
         group.appendChild(overlay);
-      
+
     } else if (shapeType.indexOf('heliumShape')>=0) {
           const heliumShape = document.createElementNS('http://www.w3.org/2000/svg', 'use');
           heliumShape.setAttribute('href', '#heliumShape');
@@ -724,7 +724,7 @@ shuffleBtn.addEventListener('click', () => {
           group.appendChild(heliumShape);
         }
           });
-          
+
         });
         updateCustomColor();
     });
@@ -782,7 +782,7 @@ document.querySelectorAll('.colorSelect').forEach((select, index) => {
 
 
 
-    
+
 
 // Update backdrop fill color when palette or colors change
 function updateBackdropColor() {
@@ -882,7 +882,7 @@ backdropSelect.addEventListener('change', () => {
       //shape.setAttribute('stroke-width', 2);
       svg.insertBefore(shape, svg.firstChild);
     }
-    
+
   }
 });
 //document.querySelector('#studioControls').appendChild(backdropSelect);
@@ -966,7 +966,7 @@ function updatePriceDisplay() {
   });
   //console.log("DEBUG: deliveryAmount =", delivCharge);
 
-  
+
 }
 
 document.getElementById('b2bToggle').addEventListener('change', updatePriceDisplay);
@@ -1117,7 +1117,7 @@ function showOrderModal(designBlob) {
     document.getElementById("order-modal").remove();
   });
 
- 
+
 
   document.getElementById("order-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1158,7 +1158,7 @@ function showOrderModal(designBlob) {
       formData.append(FORM_FIELDS.delivery_date, deliveryDate);
       //formData.append(FORM_FIELDS.design_json, JSON.stringify(designJson, null, 2));
       formData.append(FORM_FIELDS.image_url, imageUrl);
-      
+
        var price = 69;
         const priceOutput = document.getElementById('priceOutput');
         if (priceOutput) {
@@ -1246,92 +1246,12 @@ function downloadBlobAsFile(blob, filename) {
     }, 0); // Use setTimeout to ensure the click event has time to register
   }
 }
-const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
 
 function withTimeout(promise, ms = 8000) {
   return Promise.race([
     promise,
     new Promise((_, rej) => setTimeout(() => rej(new Error(`html-to-image timeout after ${ms}ms`)), ms))
   ]);
-}
-
-async function inlineImagesToDataURLs(root) {
-  const imgs = [...root.querySelectorAll('img, image')];
-  await Promise.all(imgs.map(async el => {
-    const href = el.getAttribute('src') || el.getAttribute('href') || (el.href && el.href.baseVal);
-    if (!href || href.startsWith('data:')) return;
-    try {
-      const res = await fetch(href, { mode: 'cors', cache: 'force-cache' });
-      const blob = await res.blob();
-      const dataUrl = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
-      if (el.hasAttribute('src')) el.setAttribute('src', dataUrl);
-      if (el.hasAttribute('href')) el.setAttribute('href', dataUrl);
-    } catch (e) {
-      console.warn('inline image failed', href, e);
-    }
-  }));
-}
-
-function stripRiskyFilters(root) {
-  const changed = [];
-  root.querySelectorAll('[filter],[style*="filter"],[style*="backdrop-filter"]').forEach(el => {
-    const prevAttr = el.getAttribute('filter');
-    const prevStyle = el.getAttribute('style') || '';
-    if (prevAttr) el.removeAttribute('filter');
-    if (/filter:|backdrop-filter:/.test(prevStyle)) {
-      el.setAttribute('style', prevStyle.replace(/backdrop-filter:[^;]+;?/g,'').replace(/filter:[^;]+;?/g,''));
-    }
-    changed.push({ el, prevAttr, prevStyle });
-  });
-  return () => changed.forEach(({ el, prevAttr, prevStyle }) => {
-    if (prevAttr) el.setAttribute('filter', prevAttr);
-    if (prevStyle) el.setAttribute('style', prevStyle);
-  });
-}
-
-async function capturePreviewMobileSafe(node) {
-  // 1) Offscreen visible clone (works around display/stacking quirks)
-  const wrapper = document.createElement('div');
-  Object.assign(wrapper.style, {
-    position: 'fixed', left: '-99999px', top: '0',
-    display: 'block', visibility: 'visible', background: 'transparent'
-  });
-  const clone = node.cloneNode(true);
-  wrapper.appendChild(clone);
-  document.body.appendChild(wrapper);
-
-  // 2) Prep the clone
-  await inlineImagesToDataURLs(wrapper);     // avoid CORS/taint
-  const restoreFilters = stripRiskyFilters(wrapper);
-  await new Promise(r => requestAnimationFrame(r));
-
-  // 3) Try html-to-image (skipFonts to avoid CSSOM)
-  const baseOpts = {
-    cacheBust: true,
-    backgroundColor: '#fff',
-    pixelRatio: isMobile ? 1 : 2,
-    skipFonts: true,                         // <- key for mobile CSS issues
-    filter: n => !(n.tagName === 'LINK' || n.tagName === 'SCRIPT') // ignore external links
-  };
-
-  try {
-    const blob = await withTimeout(htmlToImage.toBlob(clone, baseOpts), 8000);
-    return blob;
-  } catch (e1) {
-    console.warn('html-to-image failed, trying dom-to-image', e1);
-    try {
-      const dataUrl = await withTimeout(domtoimage.toPng(clone, baseOpts), 8000);
-      const res = await fetch(dataUrl);
-      return await res.blob();
-    } catch (e2) {
-      console.warn('dom-to-image failed, trying html2canvas', e2);
-      const canvas = await withTimeout(html2canvas(clone, { useCORS: true, allowTaint: false, backgroundColor: '#fff' }), 8000);
-      return await new Promise(r => canvas.toBlob(r, 'image/png'));
-    }
-  } finally {
-    restoreFilters();
-    wrapper.remove();
-  }
 }
 
 let orderBtnBound = false;   // prevents duplicate binding
@@ -1359,19 +1279,6 @@ function bindOrderButton() {
     orderInFlight = true;
 
     try {
-    const node = document.getElementById('visualizerContainer');
-    const blob = await capturePreviewMobileSafe(node);
-    console.log('Blob ready, showing modal...');
-    showOrderModal(blob);
-  } catch (err) {
-    console.error('Capture failed:', err);
-    alert('Sorry — could not render the preview on this device.');
-  } finally {
-    setTimeout(() => { orderInFlight = false; }, 500);
-  }
-}, { passive: false });
-
-/*     try {
       console.log('Order button tapped');
       const previewDiv = document.getElementById('visualizerContainer');
 
@@ -1406,17 +1313,17 @@ function bindOrderButton() {
         .catch(err => {
           console.error('[toBlob failed]', err);
           alert('Sorry—could not render the preview on this device. Check console.');
-        }); */
+        });
 
       //console.log('Blob ready, showing modal...');
       //showOrderModal(blob);
-/*     } catch (err) {
+    } catch (err) {
       console.error('Order click failed:', err);
     } finally {
       // small delay to avoid double-tap racing the synthetic click in older stacks
       setTimeout(() => { orderInFlight = false; }, 500);
     }
-  }, { passive: false }); */
+  }, { passive: false });
 }
 
 const orderButton = document.getElementById("orderButton");
@@ -1458,7 +1365,7 @@ withTimeout(
 
 
   }); */
-  
+
 function populateDeliveryDropdown(deliveryDict) {
   const select = document.getElementById("delivery");
 
