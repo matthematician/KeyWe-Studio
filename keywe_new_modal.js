@@ -1267,6 +1267,13 @@ function bindOrderButton() {
 
 window.addEventListener('DOMContentLoaded', bindOrderButton);
 
+function withTimeout(promise, ms = 8000) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(`html-to-image timeout after ${ms}ms`)), ms))
+  ]);
+}
+
 const orderButton = document.getElementById("orderButton");
 
 orderButton.addEventListener("click", () => {
@@ -1287,14 +1294,23 @@ uses.forEach(function(el) {
   //console.log("DEBUG: Applied styles to element:", el);
 })
 
-htmlToImage
-  .toBlob(previewDiv)
-  .then(function (blob) {
-    console.log("OKAY! I'm about to show the order modal with this blob:", blob);
-    showOrderModal(blob);
-    // console.log("DEBUG: Blob created:", blob);
-    // downloadBlobAsFile(blob, 'balloon_design_preview.png');
-  });
+withTimeout(
+  htmlToImage.toBlob(node, {
+    cacheBust: true,
+    backgroundColor: '#fff',
+    pixelRatio: /iPhone|iPad|Android/i.test(navigator.userAgent) ? 1 : 2,
+  }),
+  8000
+)
+.then(blob => {
+  console.log("OKAY! I'm about to show the order modal with this blob:", blob);
+  showOrderModal(blob);
+})
+.catch(err => {
+  console.error('[toBlob failed]', err);
+  alert('Sorry—could not render the preview on this device. Check console.');
+});
+
 
   });
   
