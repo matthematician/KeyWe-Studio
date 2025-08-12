@@ -1295,7 +1295,7 @@ uses.forEach(function(el) {
 })
 
 withTimeout(
-  htmlToImage.toBlob(node, {
+  htmlToImage.toBlob(previewDiv, {
     cacheBust: true,
     backgroundColor: '#fff',
     pixelRatio: /iPhone|iPad|Android/i.test(navigator.userAgent) ? 1 : 2,
