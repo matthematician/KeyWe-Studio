@@ -1271,9 +1271,16 @@ function bindOrderButton() {
     try {
       console.log('Order button tapped');
       const previewDiv = document.getElementById('visualizerContainer');
-      const blob = await htmlToImage.toBlob(previewDiv, {
-        pixelRatio: 1, cacheBust: true, backgroundColor: '#fff'
-      });
+      const blob = await withTimeout(
+        htmlToImage.toBlob(previewDiv, {
+          pixelRatio: 1,
+          cacheBust: true,
+          backgroundColor: '#fff'
+        }),
+        8000 // timeout in ms
+      );
+
+      console.log('Blob ready, showing modal...');
       showOrderModal(blob);
     } catch (err) {
       console.error('Order click failed:', err);
