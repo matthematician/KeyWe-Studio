@@ -1265,8 +1265,6 @@ function bindOrderButton() {
   console.log('orderButton bound');
 }
 
-window.addEventListener('DOMContentLoaded', bindOrderButton);
-
 function withTimeout(promise, ms = 8000) {
   return Promise.race([
     promise,
@@ -1469,6 +1467,9 @@ window.addEventListener('DOMContentLoaded', async () => {
         selectors.forEach(({ select }) => (select.disabled = false));
       }
     });
+
+// 1c) LOL bind the order button now
+  bindOrderButton();
 
   // 2) Grab the select
   const designSelect = document.getElementById("designSelect");
