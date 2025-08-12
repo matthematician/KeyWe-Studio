@@ -193,7 +193,11 @@ function normalizeHex(hex){let h=hex.replace(/^#/,'').toLowerCase();if(h.length=
 function isLightColor(hex){hex=hex.replace(/^#/,"");const r=parseInt(hex.substring(0,2),16),g=parseInt(hex.substring(2,4),16),b=parseInt(hex.substring(4,6),16);const rs=r/255,gs=g/255,bs=b/255;const toLinear=c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4);const luminance=0.2126*toLinear(rs)+0.7152*toLinear(gs)+0.0722*toLinear(bs);return luminance>0.5;}
 function getColorCodeByName(name){const match=colors.find(c=>c.name===name);return match?match.code:'#888888';}
 function getQueryParam(param){const urlParams=new URLSearchParams(window.location.search);return urlParams.get(param);}
-
+function setSvgHref(el, url) {
+  const clean = normalizeUrl(url);
+  try { el.setAttribute('href', clean); } catch {}
+  try { el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', clean); } catch {}
+}
 // Convert a Blob to a data URL
 function blobToDataURL(blob) {
   return new Promise((resolve, reject) => {
