@@ -1242,6 +1242,31 @@ function downloadBlobAsFile(blob, filename) {
   }
 }
 
+function bindOrderButton() {
+  const btn = document.getElementById('orderButton');
+  if (!btn) { console.warn('orderButton not found'); return; }
+
+  const handler = async (e) => {
+    try {
+      e.preventDefault();
+      // your existing capture + modal code:
+      const previewDiv = document.getElementById('visualizerContainer');
+      const blob = await htmlToImage.toBlob(previewDiv, { pixelRatio: 1, cacheBust: true, backgroundColor: '#fff' });
+      showOrderModal(blob);
+    } catch (err) {
+      console.error('Order click failed:', err);
+    }
+  };
+
+  ['pointerup','click','touchend'].forEach(t =>
+    btn.addEventListener(t, handler, { passive: true })
+  );
+  btn.style.touchAction = 'manipulation';
+  console.log('orderButton bound');
+}
+
+window.addEventListener('DOMContentLoaded', bindOrderButton);
+
 const orderButton = document.getElementById("orderButton");
 orderButton.addEventListener("click", () => {
   console.log("WHOA. You just clicked the order button and I heard it!");
