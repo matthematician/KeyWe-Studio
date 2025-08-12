@@ -223,7 +223,7 @@ async function inlineSvgImages(svg) {
 
   // Preload & inline each image as data URL
   await Promise.all(imgs.map(async (el, i) => {
-    const src = normalizeUrl(originals[i]);
+    const src = originals[i];
     if (!src) return;
     try {
       const dataUrl = await urlToDataURL(src);
