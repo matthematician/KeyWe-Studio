@@ -1,0 +1,286 @@
+body{
+  margin: 0;
+  font-family: 'Londrina Solid', sans-serif;
+  font-weight: 100;
+  background: #f9f9fa;
+  /*color: #333; */
+}
+
+h1,h2{
+  font-family: 'Londrina Solid', sans-serif;
+  font-weight: 300;
+}
+
+button{
+  font-family: 'Londrina Solid', sans-serif;
+  font-weight: 300;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header, footer {
+  background: #483063;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+
+.main-layout {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.left-panel {
+  flex: 1 1 280px;
+  min-width: 260px;
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.05);
+}
+
+.right-panel {
+  flex: 2 1 500px;
+  min-width: 400px;
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.05);
+}
+
+.form-group {
+  margin-bottom: 1em;
+}
+
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.3em;
+}
+
+label.compact {
+  font-weight: 600;
+  margin: 0; padding: 0;
+}
+
+select, input[type="checkbox"], input[type="radio"] {
+  font-size: 1em;
+  width: 100%;
+}
+
+#visualizerContainer {
+  position: relative;
+  width: 100%;
+  padding-top: 66.67%; /* 600x400 */
+  /* background-image: url(assets/eventhall.jpg); */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 1px solid #ccc;
+
+}
+
+#balloonSVG {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#silhouette {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  height: 60%;
+  opacity: 0.6;
+}
+
+.export-buttons {
+  margin-top: 1em;
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+}
+
+.price-display {
+  font-size: 1.2em;
+  color: #483063;
+}
+
+
+button {
+  padding: 0.6em 1.2em;
+  background-color: #483063;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 0.5em;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #6a4c91;
+}
+
+.price-display {
+  font-size: 1.2em;
+  color: #483063;
+  text-align: center;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px; /* Adjust spacing between buttons */
+  flex-wrap: wrap; /* Allow wrapping if screen is narrow */
+  margin-top: 10px;
+  align-items: center;
+  align-items: center; /* Ensures vertical alignment */
+  justify-content: center;
+}
+.button-row button {
+  padding: 6px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+  width: auto !important;
+  flex: 0 0 auto !important;
+  display: inline-block;
+}
+
+.selector-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.selector-group {
+  display: flexbox;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.selector-group label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.colorSelect {
+  padding: 6px 8px;
+  font-size: 14px;
+  width: 140px;
+}
+
+.price-display{
+  font-size: 1.75em;
+  color: #483063;
+}
+
+/* === Site Header / Top Navigation (matches Keylium site branding) === */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #483063; /* Keylium purple */
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+
+.topbar {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: .5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  text-decoration: none;
+  color: #fff;
+}
+
+.brand img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.brand .brand-title {
+  font-family: 'Londrina Solid', sans-serif;
+  font-weight: 900;
+  letter-spacing: .5px;
+  font-size: 1.25rem;
+  line-height: 1;
+  margin: 0;
+}
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: .25rem .5rem;
+  cursor: pointer;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.site-nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 400;
+  padding: .5rem .65rem;
+  border-radius: 4px;
+  transition: background-color .2s ease, color .2s ease;
+}
+
+.site-nav a:hover,
+.site-nav a:focus {
+  background: rgba(255,255,255,.15);
+  outline: none;
+}
+
+/* Mobile */
+@media (max-width: 800px) {
+  .nav-toggle { display: block; }
+  .site-nav {
+    position: absolute;
+    left: 0; right: 0;
+    top: 60px;
+    background: #483063;
+    display: none;
+    flex-direction: column;
+    padding: .5rem 1rem 1rem;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+  .site-nav.open { display: flex; }
+}
+
+/* Push page content down a bit to account for sticky header */
+body { scroll-padding-top: 70px; }
+
+/* Optional: unify footer color to match header */
+footer { background: #483063; color: #fff; }
