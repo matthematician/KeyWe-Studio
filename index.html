@@ -488,7 +488,7 @@
   });
   undoBtn.addEventListener('click',()=>{designSelect.dispatchEvent(new Event('change'));});
 
-// Shuffle button: randomly redistribute balloon elements across groups
+// === Shuffle: redistribute ONLY <circle> and <use> among the 3 groups ===
 shuffleBtn.addEventListener('click', () => {
   const groups = [
     document.getElementById('balloonGroup1'),
@@ -496,29 +496,50 @@ shuffleBtn.addEventListener('click', () => {
     document.getElementById('balloonGroup3')
   ];
 
-  // Gather all current balloon elements from all groups
-  const allBalloons = [];
+  // Collect only direct-child <circle> and <use> elements (skip <image>)
+  const movable = [];
   groups.forEach(g => {
-    Array.from(g.querySelectorAll('.balloon')).forEach(el => {
-      allBalloons.push(el);
+    Array.from(g.children).forEach(node => {
+      const tag = node.tagName.toLowerCase();
+      if (tag === 'circle' || tag === 'use') {
+        movable.push(node);
+      }
     });
-    g.innerHTML = ''; // clear group
   });
 
-  if (!allBalloons.length) return;
+  if (!movable.length) return;
 
-  // Shuffle array in place (Fisher–Yates)
-  for (let i = allBalloons.length - 1; i > 0; i--) {
+  // Fisher–Yates shuffle (in place)
+  for (let i = movable.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [allBalloons[i], allBalloons[j]] = [allBalloons[j], allBalloons[i]];
+    [movable[i], movable[j]] = [movable[j], movable[i]];
   }
 
-  // Redistribute evenly among the 3 groups
-  allBalloons.forEach((el, idx) => {
-    const g = groups[idx % 3];
-    g.appendChild(el);
+  // Helpers to get the destination group's current color
+  const getColorName = idx => {
+    const sel = document.getElementById(`colorSelect${idx + 1}`);
+    return sel ? sel.value : '';
+  };
+  const tintForGroup = (el, gIdx) => {
+    const colorName = getColorName(gIdx);
+    if (!colorName || typeof getColorCodeByName !== 'function') return;
+    const code = getColorCodeByName(colorName);
+    el.setAttribute('fill', code);
+    el.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
+  };
+
+  // Redistribute evenly; insert at group start so existing overlays (images) stay on top
+  movable.forEach((el, idx) => {
+    const gIdx = idx % groups.length;
+    const g = groups[gIdx];
+    // move element (inserting at the front keeps it under any overlay images already present)
+    g.insertBefore(el, g.firstChild || null);
+    // retint to destination group's color
+    tintForGroup(el, gIdx);
   });
 });
+
+
 
 
   function populateDeliveryDropdown(dict){
