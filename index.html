@@ -488,57 +488,121 @@
   });
   undoBtn.addEventListener('click',()=>{designSelect.dispatchEvent(new Event('change'));});
 
-// === Shuffle: redistribute ONLY <circle> and <use> among the 3 groups ===
-shuffleBtn.addEventListener('click', () => {
-  const groups = [
-    document.getElementById('balloonGroup1'),
-    document.getElementById('balloonGroup2'),
-    document.getElementById('balloonGroup3')
-  ];
+// Shuffle: reassign group_id for CIRCLE/USE rows, then re-render from CSV
+shuffleBtn.addEventListener('click', async () => {
+  try {
+    const selectedFile = designSelect.value;
+    const csvText = await fetch(`assets/designs/${selectedFile}`).then(r => r.text());
 
-  // Collect only direct-child <circle> and <use> elements (skip <image>)
-  const movable = [];
-  groups.forEach(g => {
-    Array.from(g.children).forEach(node => {
-      const tag = node.tagName.toLowerCase();
-      if (tag === 'circle' || tag === 'use') {
-        movable.push(node);
+    const lines = csvText.trim().split('\n');
+    const header = lines[0];                      // keep header intact
+    const data = lines.slice(1).map(row => row.split(',')); // rows: [group_id,cx,cy,radius,z_index,shapeType,rotation]
+
+    // Randomize ONLY circles/helium groups; leave images & backdrops in place
+    data.forEach(cols => {
+      const shapeType = cols[5] || 'circleShape';
+      const isCircle = !shapeType || shapeType.indexOf('circle') >= 0;
+      const isHelium = shapeType.indexOf('heliumShape') >= 0;
+      const isImage  = /^image\(/.test(shapeType);
+      const isBackdrop = shapeType.indexOf('halfRound') >= 0;
+
+      if ((isCircle || isHelium) && !isImage && !isBackdrop) {
+        cols[0] = String(Math.floor(Math.random() * 3) + 1); // group_id ∈ {1,2,3}
       }
     });
-  });
 
-  if (!movable.length) return;
+    // Clear groups and re-render with the new group assignments
+    const groups = [
+      document.getElementById('balloonGroup1'),
+      document.getElementById('balloonGroup2'),
+      document.getElementById('balloonGroup3')
+    ];
+    groups.forEach(g => g.innerHTML = '');
 
-  // Fisher–Yates shuffle (in place)
-  for (let i = movable.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [movable[i], movable[j]] = [movable[j], movable[i]];
+    data.forEach(cols => {
+      let [group_id, cx, cy, radius, z_index, shapeType, rotation] = cols;
+      if (!shapeType) shapeType = 'circleShape';
+      rotation = rotation || 0;
+
+      const gIdx = Math.max(1, Math.min(3, parseInt(group_id, 10))) - 1;
+      const group = groups[gIdx];
+      if (!group) return;
+
+      const colorName = document.querySelectorAll('.colorSelect')[gIdx].value;
+      const colorCode = getColorCodeByName(colorName);
+
+      if (shapeType.indexOf('circle') >= 0 || !shapeType) {
+        // Circle balloon
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', radius);
+        circle.setAttribute('fill', colorCode);
+        circle.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
+        circle.setAttribute('filter', 'url(#balloonShadow)');
+        circle.setAttribute('class', 'balloon');
+        group.appendChild(circle);
+
+        const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        overlay.setAttribute('x', cx - radius);
+        overlay.setAttribute('y', cy - radius);
+        overlay.setAttribute('width', radius * 2);
+        overlay.setAttribute('height', radius * 2);
+        overlay.setAttribute('href', colorName.includes('Chrome') ? 'assets/sheenChr.png' : 'assets/sheenStd.png');
+        overlay.setAttribute('class', 'balloon');
+        overlay.setAttribute('opacity', '0.5');
+        group.appendChild(overlay);
+
+      } else if (shapeType.indexOf('heliumShape') >= 0) {
+        // Helium balloon
+        const helium = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        helium.setAttribute('href', '#heliumShape');
+        helium.setAttribute('class', 'balloon');
+        helium.setAttribute('transform', `rotate(${rotation} ${cx} ${cy}) translate(${cx - radius} ${cy - radius}) scale(${radius / 17.75})`);
+        helium.setAttribute('fill', colorCode);
+        helium.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
+        group.appendChild(helium);
+
+        const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        overlay.setAttribute('x', cx - radius);
+        overlay.setAttribute('y', cy - radius);
+        overlay.setAttribute('width', radius * 2);
+        overlay.setAttribute('transform', `rotate(${rotation} ${cx} ${cy})`);
+        overlay.setAttribute('href', colorName.includes('Chrome') ? 'assets/heliumSheenChr.png' : 'assets/heliumSheenStd.png');
+        overlay.setAttribute('class', 'balloon');
+        overlay.setAttribute('opacity', '0.5');
+        group.appendChild(overlay);
+
+      } else if (/^image\(/.test(shapeType)) {
+        // Image balloons stay where they were (no shuffle)
+        const imageUrl = shapeType.slice(6, -1);
+        const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        img.setAttribute('x', cx - radius);
+        img.setAttribute('y', cy - radius);
+        img.setAttribute('width', radius * 2);
+        img.setAttribute('height', radius * 2);
+        img.setAttribute('href', imageUrl);
+        if (imageUrl.includes('custom-')) img.setAttribute('id', 'custom-vinyl');
+        group.appendChild(img);
+
+      } else if (shapeType.indexOf('halfRound') >= 0) {
+        // Backdrop stays where it was (no shuffle)
+        const back = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        back.setAttribute('href', '#halfRound');
+        back.setAttribute('class', 'balloon');
+        back.setAttribute('transform', `rotate(${rotation} ${cx} ${cy}) translate(${cx - radius} ${cy - radius}) scale(${radius / 17.75})`);
+        back.setAttribute('fill', colorCode);
+        back.setAttribute('filter', 'brightness(0.9)');
+        group.appendChild(back);
+      }
+    });
+
+    // Keep custom vinyl color/opacities in sync
+    if (typeof updateCustomColor === 'function') updateCustomColor();
+  } catch (err) {
+    console.error('Shuffle failed:', err);
   }
-
-  // Helpers to get the destination group's current color
-  const getColorName = idx => {
-    const sel = document.getElementById(`colorSelect${idx + 1}`);
-    return sel ? sel.value : '';
-  };
-  const tintForGroup = (el, gIdx) => {
-    const colorName = getColorName(gIdx);
-    if (!colorName || typeof getColorCodeByName !== 'function') return;
-    const code = getColorCodeByName(colorName);
-    el.setAttribute('fill', code);
-    el.setAttribute('opacity', colorName.startsWith('Crystal') ? '0.8' : '1.0');
-  };
-
-  // Redistribute evenly; insert at group start so existing overlays (images) stay on top
-  movable.forEach((el, idx) => {
-    const gIdx = idx % groups.length;
-    const g = groups[gIdx];
-    // move element (inserting at the front keeps it under any overlay images already present)
-    g.insertBefore(el, g.firstChild || null);
-    // retint to destination group's color
-    tintForGroup(el, gIdx);
-  });
 });
-
 
 
 
