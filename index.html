@@ -488,6 +488,39 @@
   });
   undoBtn.addEventListener('click',()=>{designSelect.dispatchEvent(new Event('change'));});
 
+// Shuffle button: randomly redistribute balloon elements across groups
+shuffleBtn.addEventListener('click', () => {
+  const groups = [
+    document.getElementById('balloonGroup1'),
+    document.getElementById('balloonGroup2'),
+    document.getElementById('balloonGroup3')
+  ];
+
+  // Gather all current balloon elements from all groups
+  const allBalloons = [];
+  groups.forEach(g => {
+    Array.from(g.querySelectorAll('.balloon')).forEach(el => {
+      allBalloons.push(el);
+    });
+    g.innerHTML = ''; // clear group
+  });
+
+  if (!allBalloons.length) return;
+
+  // Shuffle array in place (Fisher–Yates)
+  for (let i = allBalloons.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allBalloons[i], allBalloons[j]] = [allBalloons[j], allBalloons[i]];
+  }
+
+  // Redistribute evenly among the 3 groups
+  allBalloons.forEach((el, idx) => {
+    const g = groups[idx % 3];
+    g.appendChild(el);
+  });
+});
+
+
   function populateDeliveryDropdown(dict){
     const select=document.getElementById('delivery');
     select.innerHTML='';
