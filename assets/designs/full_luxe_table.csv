@@ -5,4 +5,4 @@ group_id,cx,cy,radius,z_index,shape,rotation
 2,194,112,28.125,11,circleShape,0
 3,171,66,28.125,13,circleShape,0
 3,184,117,28.125,15,circleShape,0
-3,200,200,100,1,image(assets/luxe-base-black.png),0
+3,185,215,100,1,image(assets/luxe-base-black.png),0
