@@ -1,5 +1,5 @@
 group_id,cx,cy,radius,z_index,shape,rotation
-1,221,181,100,11,image(assets/goldshimmer.png),0
+1,221,181,150,11,image(assets/goldshimmer.png),0
 1,150,20,150,11,image(assets/shimmeroptions.png),0
 1,154,326,14.84375,5,circleShape,0
 1,176,333,14.84375,7,circleShape,0
