@@ -2,6 +2,7 @@ filename,base_price,subscription_price,label,customizable
 separator1,0,0,Organic Decor and Backdrops,false
 freestand9.csv,100,80,Freestanding Garland 9',false
 roundbackdrop9.csv,200,150,Round Backdrop and 9' Garland,true
+shimmer9.csv,200,150,Shimmer Wall and 9' Garland,true
 stackdrop.csv,250,200,Backdrop and Stack Combo,true
 swagsgarland.csv,150,120,Corners with Link Swags,false
 photoframe.csv,250,200,Photo Frame 9x9,true
