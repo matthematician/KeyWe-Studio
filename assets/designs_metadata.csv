@@ -11,7 +11,9 @@ spiraltower.csv,120,90,Spiral Tower,true
 crazytower.csv,100,80,Crazy Tower,true
 numberstack1.csv,60,40,Number Stack (One digit),false
 numberstack16.csv,80,70,Number Stack (Two digits),false
-separator3,0,0,Arches,false
+separator3,0,0,Bouquets,false
+full_luxe_table.csv,75,50,Satin Luxe Bouquet,true
+separator4,0,0,Arches,false
 stringofpearls.csv,80,50,String of Pearls Arch (Helium),false
 linkarch.csv,120,100,Small Link Arch (Air-Filled),false
 classicspiralarch.csv,300,240,Full Spiral Arch (Air-Filled),false
