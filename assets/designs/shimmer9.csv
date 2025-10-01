@@ -92,5 +92,5 @@ group_id,cx,cy,radius,z_index,shape,rotation
 1,191,294,42,183,image(assets/goldstar.png),0
 1,135,180,42,185,image(assets/goldstar.png),0
 1,238,90,42,187,image(assets/goldstar.png),0
-1,241,221,150,-1,image(assets/goldshimmer.png),0
-1,150,10,200,-1,image(assets/shimmeroptions.png),0
+1,241,221,150,11,image(assets/goldshimmer.png),0
+1,150,10,200,11,image(assets/shimmeroptions.png),0
