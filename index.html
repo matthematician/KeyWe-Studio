@@ -410,7 +410,7 @@
           const imageUrl = normalizeUrl(row.shape.slice(6,-1));
           const img=document.createElementNS('http://www.w3.org/2000/svg','image');
           img.setAttribute('x',row.cx-row.radius); img.setAttribute('y',row.cy-row.radius);
-          img.setAttribute('width',row.radius*2); img.setAttribute('height',row.radius*2);
+          img.setAttribute('width',row.radius*2); // img.setAttribute('height',row.radius*2);
           setSvgHref(img, imageUrl);
           if(imageUrl.includes('custom-')) img.setAttribute('id','custom-vinyl');
           group.appendChild(img);
