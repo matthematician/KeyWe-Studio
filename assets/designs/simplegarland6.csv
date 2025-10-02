@@ -42,3 +42,4 @@ group_id,cx,cy,radius,z_index,shape,rotation
 3,356,127,7.8125,85,circleShape,0
 3,372,128,7.8125,87,circleShape,0
 3,404,137,7.8125,89,circleShape,0
+1,198,145,20,17,image(assets/custom-white.png),0
