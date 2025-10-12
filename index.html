@@ -737,6 +737,8 @@ shuffleBtn.addEventListener('click', async () => {
         if (ps) ps.value = ''; // ensure "custom" state visually
         updateCustomColor();
         updatePriceDisplay();
+      }else{
+        console.warn('One or more initial colors not found in color list; using defaults.');
       }
     }
     //
