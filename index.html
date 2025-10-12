@@ -730,6 +730,7 @@ shuffleBtn.addEventListener('click', async () => {
       const allExist = initialColorsArray.every(name => colors.some(c => c.name === name));
       if (allExist) {
         // apply to the selects and update visual state
+        console.log('Imma do this thing');
         selectors.forEach((s, i) => { if (initialColorsArray[i]) s.select.value = initialColorsArray[i]; });
         setPaletteByNames(initialColorsArray);
         const ps = document.getElementById('paletteSelect');
