@@ -711,10 +711,34 @@ shuffleBtn.addEventListener('click', async () => {
     // design select behavior
     const filenames=Object.keys(allDesignMetadata);
     const initialBase=getQueryParam('design')||'stringofpearls';
+    const initialColors=getQueryParam('col')||'null'; // Expecting [A-Z]{9} here
+    // If col parameter matches three groups of three uppercase letters, split into array; otherwise null
+    let initialColorsArray = null;
+    if(typeof initialColors === 'string'){
+      const m = initialColors.match(/^([A-Z]{3})([A-Z]{3})([A-Z]{3})$/);
+      if(m){ initialColorsArray = [m[1], m[2], m[3]]; }
+      else { initialColorsArray = null; }
+    }
+    // small debug: shows parsed array or null
+    console.log('initialColors:', initialColors, 'parsed:', initialColorsArray);
     const initialFile=`${initialBase}.csv`;
     designSelect.value=[...designSelect.options].some(o=>o.value===initialFile) ? initialFile : (filenames[0]||initialFile);
     renderDesignFromCSV(`assets/designs/${designSelect.value}`);
     loadDesignMetadata(designSelect.value, allDesignMetadata);
+    // If col parameter is correctly formatted, set custom colors accordingly before rendering
+    if (Array.isArray(initialColorsArray) && initialColorsArray.length === 3) {
+      const allExist = initialColorsArray.every(name => colors.some(c => c.name === name));
+      if (allExist) {
+        // apply to the selects and update visual state
+        selectors.forEach((s, i) => { if (initialColorsArray[i]) s.select.value = initialColorsArray[i]; });
+        setPaletteByNames(initialColorsArray);
+        const ps = document.getElementById('paletteSelect');
+        if (ps) ps.value = ''; // ensure "custom" state visually
+        updateCustomColor();
+        updatePriceDisplay();
+      }
+    }
+    //
     designSelect.addEventListener('change',()=>{
       const file=designSelect.value;
       loadDesignMetadata(file, allDesignMetadata);
