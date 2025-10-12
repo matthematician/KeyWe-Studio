@@ -711,11 +711,12 @@ shuffleBtn.addEventListener('click', async () => {
     // design select behavior
     const filenames=Object.keys(allDesignMetadata);
     const initialBase=getQueryParam('design')||'stringofpearls';
-    const initialColors=getQueryParam('col')||'null'; // Expecting [A-Z]{9} here
+    const initialColors=getQueryParam('col')||'null'; // Expecting comma-sep color names here
     // If col parameter matches three groups of three uppercase letters, split into array; otherwise null
     let initialColorsArray = null;
     if(typeof initialColors === 'string'){
-      const m = initialColors.match(/^([A-Z]{3})([A-Z]{3})([A-Z]{3})$/);
+      initialColors.replace(/\%20/g,' ');
+      const m = initialColors.match(/^(.+?),(.+?),(.+?)$/);
       if(m){ initialColorsArray = [m[1], m[2], m[3]]; }
       else { initialColorsArray = null; }
     }
