@@ -53,4 +53,4 @@ group_id,cx,cy,radius,z_index,shape,rotation
 1,113,332,48,105,image(assets/silverstar.png),0
 1,196,176,48,107,image(assets/silverstar.png),0
 1,160,250,60,109,image(assets/silverfringe.png),0
-1,160,125,28,999,image(assets/custom-black.png),0
+1,160,130,28,999,image(assets/custom-black.png),0
