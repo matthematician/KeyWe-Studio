@@ -6,5 +6,5 @@ group_id,cx,cy,radius,z_index,shape,rotation
 2,143,126,17.1875,13,heliumShape,-8
 1,165,127,17.1875,15,heliumShape,0
 1,165,70,28.125,17,circleShape,0
-3,122,130,93,1,image(assets/luxe-centeronly.png),0
+3,169,177,93,1,image(assets/luxe-centeronly.png),0
 1,165,70,24,18,image(assets/custom-white.png),0
