@@ -1,0 +1,8 @@
+group_id,cx,cy,radius,z_index,shape,rotation
+1,143,184,17.1875,5,heliumShape,-5
+2,187,185,17.1875,7,heliumShape,5
+3,166,184,17.1875,9,heliumShape,0
+3,187,125,17.1875,11,heliumShape,8
+2,143,126,17.1875,13,heliumShape,-8
+1,165,127,17.1875,15,heliumShape,0
+1,165,70,28.125,17,circleShape,0
